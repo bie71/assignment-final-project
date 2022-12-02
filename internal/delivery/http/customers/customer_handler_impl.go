@@ -29,8 +29,19 @@ func (c *CustomerHandlerImpl) AddCustomer(w http.ResponseWriter, r *http.Request
 	return
 }
 
-func (c *CustomerHandlerImpl) GetCustomer(w http.ResponseWriter, r *http.Request) {
+func (c *CustomerHandlerImpl) GetAndDeleteCustomer(w http.ResponseWriter, r *http.Request) {
 	customerId := r.URL.Query().Get("id")
+
+	if r.Method == http.MethodDelete {
+		data, err := c.customerService.DeleteCustomer(r.Context(), customerId, customerId)
+		if err != nil {
+			delivery.ResponseDelivery(w, http.StatusNotFound, err.Error())
+			return
+		}
+		delivery.ResponseDelivery(w, http.StatusOK, data)
+		return
+	}
+
 	if customerId == "" {
 		data, err := c.customerService.GetCustomers(r.Context())
 		if err != nil {
@@ -49,7 +60,13 @@ func (c *CustomerHandlerImpl) GetCustomer(w http.ResponseWriter, r *http.Request
 	delivery.ResponseDelivery(w, http.StatusOK, data)
 }
 
-func (c *CustomerHandlerImpl) DeleteCustomer(w http.ResponseWriter, r *http.Request) {
-	//TODO implement me
-	panic("implement me")
-}
+//func (c *CustomerHandlerImpl) DeleteCustomer(w http.ResponseWriter, r *http.Request) {
+//	customerId := r.URL.Query().Get("id")
+//
+//	data, err := c.customerService.DeleteCustomer(r.Context(), customerId, customerId)
+//	if err != nil {
+//		delivery.ResponseDelivery(w, http.StatusNotFound, err.Error())
+//		return
+//	}
+//	delivery.ResponseDelivery(w, http.StatusOK, data)
+//}

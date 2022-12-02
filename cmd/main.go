@@ -23,9 +23,8 @@ func Router(handler users_interface.UserHandler, handlerCustomer customer_interf
 	api := router.PathPrefix("/api").Subrouter()
 	api.Use(middleware.AuthHandler)
 	api.HandleFunc("/customer", handlerCustomer.AddCustomer).Methods(http.MethodPost)
-	api.HandleFunc("/customer", handlerCustomer.GetCustomer).Queries("id", "{id}").Methods(http.MethodGet)
-	api.HandleFunc("/customer", handlerCustomer.GetCustomer).Methods(http.MethodGet)
-	api.HandleFunc("/customer/{id}", handlerCustomer.DeleteCustomer).Methods(http.MethodDelete)
+	api.HandleFunc("/customer", handlerCustomer.GetAndDeleteCustomer).Queries("id", "{id}").Methods(http.MethodGet, http.MethodDelete)
+	api.HandleFunc("/customer", handlerCustomer.GetAndDeleteCustomer).Methods(http.MethodGet)
 
 	router.HandleFunc("/register", handler.Register).Methods(http.MethodPost)
 	router.HandleFunc("/login", handler.Login).Methods(http.MethodPost)
