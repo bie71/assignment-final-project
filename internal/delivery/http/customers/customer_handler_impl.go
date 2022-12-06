@@ -59,14 +59,3 @@ func (c *CustomerHandlerImpl) GetAndDeleteCustomer(w http.ResponseWriter, r *htt
 	}
 	delivery.ResponseDelivery(w, http.StatusOK, data)
 }
-
-//func (c *CustomerHandlerImpl) DeleteCustomer(w http.ResponseWriter, r *http.Request) {
-//	customerId := r.URL.Query().Get("id")
-//
-//	data, err := c.customerService.DeleteCustomer(r.Context(), customerId, customerId)
-//	if err != nil {
-//		delivery.ResponseDelivery(w, http.StatusNotFound, err.Error())
-//		return
-//	}
-//	delivery.ResponseDelivery(w, http.StatusOK, data)
-//}

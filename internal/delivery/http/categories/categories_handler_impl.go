@@ -24,8 +24,18 @@ func (c *CategoryHandlerImpl) CreateCategory(w http.ResponseWriter, r *http.Requ
 	delivery.ResponseDelivery(w, http.StatusCreated, category)
 }
 
-func (c *CategoryHandlerImpl) FindCategory(w http.ResponseWriter, r *http.Request) {
+func (c *CategoryHandlerImpl) FindAndDeleteCategory(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("id")
+
+	if r.Method == http.MethodDelete {
+		data, err := c.categoryService.DeleteCategoryById(r.Context(), query)
+		if err != nil {
+			delivery.ResponseDelivery(w, http.StatusNotFound, err.Error())
+			return
+		}
+		delivery.ResponseDelivery(w, http.StatusOK, data)
+		return
+	}
 
 	if query == "" {
 		data, err := c.categoryService.GetCategories(r.Context())
@@ -38,17 +48,6 @@ func (c *CategoryHandlerImpl) FindCategory(w http.ResponseWriter, r *http.Reques
 	}
 
 	data, err := c.categoryService.FindCategoryById(r.Context(), query)
-	if err != nil {
-		delivery.ResponseDelivery(w, http.StatusNotFound, err.Error())
-		return
-	}
-	delivery.ResponseDelivery(w, http.StatusOK, data)
-}
-
-func (c *CategoryHandlerImpl) DeleteCategory(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query().Get("id")
-
-	data, err := c.categoryService.DeleteCategoryById(r.Context(), query)
 	if err != nil {
 		delivery.ResponseDelivery(w, http.StatusNotFound, err.Error())
 		return
