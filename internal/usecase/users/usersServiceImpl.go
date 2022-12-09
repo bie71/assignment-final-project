@@ -65,7 +65,7 @@ func (s *ServiceUsersImplement) FindUser(ctx context.Context, UserLogin *http_re
 	}
 
 	if !helper.ComparePassword(user.Password(), []byte(UserLogin.Password)) {
-		return nil, errors.New("password not match")
+		return nil, errors.New("invalid password")
 	}
 	return http_response.DomainUsersToResponseUsers(user), nil
 }

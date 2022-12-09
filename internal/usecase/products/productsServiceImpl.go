@@ -27,12 +27,11 @@ func (p *ProductsServiceImpl) AddProduct(ctx context.Context, productRequest *ht
 	productId := `product-` + helper.RandomString(16)
 
 	dataProduct := entity.NewProducts(&entity.DTOProducts{
-		ProductId:         productId,
-		Name:              productRequest.Name,
-		Price:             productRequest.Price,
-		CategoryId:        productRequest.CategoryId,
-		Stock:             productRequest.Stock,
-		ProductsCondition: productRequest.ProductCondition,
+		ProductId:  productId,
+		Name:       productRequest.Name,
+		Price:      productRequest.Price,
+		CategoryId: productRequest.CategoryId,
+		Stock:      productRequest.Stock,
 	})
 
 	err := p.repoProducts.InsertProducts(ctx, dataProduct)
@@ -72,12 +71,11 @@ func (p *ProductsServiceImpl) UpdateProduct(ctx context.Context, productRequest 
 	}
 
 	dataProduct := entity.NewProducts(&entity.DTOProducts{
-		ProductId:         productId,
-		Name:              productRequest.Name,
-		Price:             productRequest.Price,
-		CategoryId:        productRequest.CategoryId,
-		Stock:             productRequest.Stock,
-		ProductsCondition: productRequest.ProductCondition,
+		ProductId:  productId,
+		Name:       productRequest.Name,
+		Price:      productRequest.Price,
+		CategoryId: productRequest.CategoryId,
+		Stock:      productRequest.Stock,
 	})
 
 	product, err := p.repoProducts.UpdateProduct(ctx, dataProduct)

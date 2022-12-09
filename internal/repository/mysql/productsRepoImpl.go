@@ -86,8 +86,8 @@ func (p *ProductsRepoImpl) UpdateProduct(ctx context.Context, product *entity.Pr
 	defer cancel()
 
 	errTx := dbq.Tx(ctx, p.db, func(tx interface{}, Q dbq.QFn, E dbq.EFn, txCommit dbq.TxCommit) {
-		stmt := fmt.Sprintf(`UPDATE %s SET name = ?, price = ?, category_id = ?, stock = ?, product_condition = ?  WHERE product_id = ? `, models.TableNameProducts())
-		result, err := E(ctx, stmt, nil, product.NameProduct(), product.Price(), product.Category(), product.Stock(), product.Condition(), product.ProductId())
+		stmt := fmt.Sprintf(`UPDATE %s SET name = ?, price = ?, category_id = ?, stock = ? WHERE product_id = ? `, models.TableNameProducts())
+		result, err := E(ctx, stmt, nil, product.NameProduct(), product.Price(), product.Category(), product.Stock(), product.ProductId())
 		if err != nil {
 			log.Println(err)
 			return

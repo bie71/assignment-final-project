@@ -7,23 +7,21 @@ import (
 
 func DomainProductsToProductsModel(products *entity.Products) *models.ProductsModel {
 	return &models.ProductsModel{
-		ProductId:         products.ProductId(),
-		Name:              products.NameProduct(),
-		Price:             products.Price(),
-		CategoryId:        products.Category(),
-		Stock:             products.Stock(),
-		ProductsCondition: products.Condition(),
+		ProductId:  products.ProductId(),
+		Name:       products.NameProduct(),
+		Price:      products.Price(),
+		CategoryId: products.Category(),
+		Stock:      products.Stock(),
 	}
 }
 
 func ProductsModelToDomainProducts(model *models.ProductsModel) *entity.Products {
 	return entity.NewProducts(&entity.DTOProducts{
-		ProductId:         model.ProductId,
-		Name:              model.Name,
-		Price:             model.Price,
-		CategoryId:        model.CategoryId,
-		Stock:             model.Stock,
-		ProductsCondition: model.ProductsCondition,
+		ProductId:  model.ProductId,
+		Name:       model.Name,
+		Price:      model.Price,
+		CategoryId: model.CategoryId,
+		Stock:      model.Stock,
 	})
 }
 

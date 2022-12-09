@@ -15,3 +15,5 @@ drop table if exists products;
 drop table if exists coupons;
 
 drop table if exists coupons_prefix;
+
+drop table if exists criteria;

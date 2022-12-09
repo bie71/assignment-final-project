@@ -1,31 +1,28 @@
 package entity
 
 type Products struct {
-	productId         string
-	name              string
-	price             uint
-	categoryId        string
-	stock             uint
-	productsCondition string
+	productId  string
+	name       string
+	price      uint
+	categoryId string
+	stock      uint
 }
 
 type DTOProducts struct {
-	ProductId         string
-	Name              string
-	Price             uint
-	CategoryId        string
-	Stock             uint
-	ProductsCondition string
+	ProductId  string
+	Name       string
+	Price      uint
+	CategoryId string
+	Stock      uint
 }
 
 func NewProducts(products *DTOProducts) *Products {
 	return &Products{
-		productId:         products.ProductId,
-		name:              products.Name,
-		price:             products.Price,
-		categoryId:        products.CategoryId,
-		stock:             products.Stock,
-		productsCondition: products.ProductsCondition,
+		productId:  products.ProductId,
+		name:       products.Name,
+		price:      products.Price,
+		categoryId: products.CategoryId,
+		stock:      products.Stock,
 	}
 }
 
@@ -47,8 +44,4 @@ func (p *Products) Category() string {
 
 func (p *Products) Stock() uint {
 	return p.stock
-}
-
-func (p *Products) Condition() string {
-	return p.productsCondition
 }

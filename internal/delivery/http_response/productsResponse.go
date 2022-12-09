@@ -7,22 +7,20 @@ type Product struct {
 }
 
 type ProductsResponse struct {
-	ProductId        string `json:"product_id"`
-	Name             string `json:"name"`
-	Price            uint   `json:"price"`
-	CategoryId       string `json:"category_id"`
-	Stock            uint   `json:"stock"`
-	ProductCondition string `json:"product_condition"`
+	ProductId  string `json:"product_id"`
+	Name       string `json:"name"`
+	Price      uint   `json:"price"`
+	CategoryId string `json:"category_id"`
+	Stock      uint   `json:"stock"`
 }
 
 func DomainProductsToProductsResponse(products *entity.Products) *ProductsResponse {
 	return &ProductsResponse{
-		ProductId:        products.ProductId(),
-		Name:             products.NameProduct(),
-		Price:            products.Price(),
-		CategoryId:       products.Category(),
-		Stock:            products.Stock(),
-		ProductCondition: products.Condition(),
+		ProductId:  products.ProductId(),
+		Name:       products.NameProduct(),
+		Price:      products.Price(),
+		CategoryId: products.Category(),
+		Stock:      products.Stock(),
 	}
 }
 

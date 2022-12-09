@@ -28,8 +28,7 @@ create table if not exists products (
      name varchar(200),
      price int,
      category_id varchar(50),
-     stock int,
-     product_condition varchar(50)
+     stock int
 );
 
 create table if not exists coupons (
