@@ -2,6 +2,10 @@ package http_response
 
 import entity "assigment-final-project/domain/entity/products"
 
+type Product struct {
+	Product any `json:"product"`
+}
+
 type ProductsResponse struct {
 	ProductId        string `json:"product_id"`
 	Name             string `json:"name"`

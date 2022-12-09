@@ -9,4 +9,5 @@ import (
 type UserService interface {
 	AddUser(ctx context.Context, userRequest *http_request.UserRequest) (string, error)
 	FindUser(ctx context.Context, UserLogin *http_request.UserLogin) (*http_response.UserResponse, error)
+	GetUsers(ctx context.Context) ([]*http_response.UserResponse, error)
 }

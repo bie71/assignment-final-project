@@ -9,21 +9,22 @@ import (
 )
 
 var (
-	secretKey = os.Getenv("secret_key")
+	secretKey = os.Getenv("SECRET_KEY")
+	nameToken = os.Getenv("NAME_TOKEN")
 	NewJwt    = jwt.NewTokenJwtImpl(secretKey)
 )
 
 func AuthHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token, err := r.Cookie("access_token")
+		token, err := r.Cookie(nameToken)
 		if err != nil {
 			if err == http.ErrNoCookie {
-				delivery.ResponseDelivery(w, http.StatusUnauthorized, nil)
+				delivery.ResponseDelivery(w, http.StatusUnauthorized, nil, err.Error())
 				return
 			}
 
 			log.Println(err)
-			delivery.ResponseDelivery(w, http.StatusBadRequest, nil)
+			delivery.ResponseDelivery(w, http.StatusBadRequest, nil, err.Error())
 			return
 		}
 
@@ -35,7 +36,7 @@ func AuthHandler(next http.Handler) http.Handler {
 			// Pass down the request to the next middleware (or final handler)
 			next.ServeHTTP(w, r)
 		} else {
-			delivery.ResponseDelivery(w, http.StatusForbidden, nil)
+			delivery.ResponseDelivery(w, http.StatusForbidden, nil, err.Error())
 		}
 	})
 }

@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+type User struct {
+	User any `json:"user"`
+}
+
 type UserResponse struct {
 	UserId    string    `json:"user_id"`
 	Name      string    `json:"name"`
@@ -21,4 +25,14 @@ func DomainUsersToResponseUsers(users *entity.Users) *UserResponse {
 		UserType:  users.UserType(),
 		CreatedAt: users.CreatedAt(),
 	}
+}
+
+func ListDomainUserToListUserResponse(domain []*entity.Users) []*UserResponse {
+	listResponse := make([]*UserResponse, 0)
+
+	for _, user := range domain {
+		result := DomainUsersToResponseUsers(user)
+		listResponse = append(listResponse, result)
+	}
+	return listResponse
 }

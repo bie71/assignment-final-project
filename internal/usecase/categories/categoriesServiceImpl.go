@@ -8,11 +8,16 @@ import (
 	"assigment-final-project/internal/delivery/http_response"
 	"context"
 	"github.com/go-playground/validator/v10"
+	"sync"
 )
 
 type CategoryServiceImpl struct {
 	repoCategory repository.CategoryRepo
 	validation   *validator.Validate
+}
+
+func NewCategoryServiceImpl(repoCategory repository.CategoryRepo, validation *validator.Validate) *CategoryServiceImpl {
+	return &CategoryServiceImpl{repoCategory: repoCategory, validation: validation}
 }
 
 func (c *CategoryServiceImpl) AddCategory(ctx context.Context, categoryRequest *http_request.CategoryRequest) (string, error) {
@@ -21,8 +26,7 @@ func (c *CategoryServiceImpl) AddCategory(ctx context.Context, categoryRequest *
 		return "", errValidation
 	}
 
-	randomString := helper.RandomString(16)
-	categoryId := `category-` + randomString
+	categoryId := `category-` + helper.RandomString(16)
 
 	dataCategory := entity.NewCategories(&entity.DTOCategories{
 		CategoryId: categoryId,
@@ -62,4 +66,42 @@ func (c *CategoryServiceImpl) DeleteCategoryById(ctx context.Context, categoryId
 		return "", err
 	}
 	return "Success Delete Category", nil
+}
+
+func (c *CategoryServiceImpl) AddCategories(ctx context.Context, categories []*http_request.CategoryRequest) (string, error) {
+	wg := sync.WaitGroup{}
+	err := make(chan error)
+
+	for _, categoryReq := range categories {
+		errValidation := c.validation.Struct(categoryReq)
+		if errValidation != nil {
+			return "", errValidation
+		}
+	}
+
+	wg.Add(1)
+	defer close(err)
+	go func() {
+		defer wg.Done()
+		listEntity := make([]*entity.Categories, 0)
+
+		for _, category := range categories {
+
+			categoryId := `category-` + helper.RandomString(16)
+			entity := entity.NewCategories(&entity.DTOCategories{
+				CategoryId: categoryId,
+				Name:       category.Name,
+			})
+			listEntity = append(listEntity, entity)
+		}
+		errRepo := c.repoCategory.InsertListCategory(ctx, listEntity)
+		err <- errRepo
+	}()
+	resultErr := <-err
+	wg.Wait()
+
+	if resultErr != nil {
+		return "", resultErr
+	}
+	return "Success Insert Categories", nil
 }

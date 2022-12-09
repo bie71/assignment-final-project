@@ -26,8 +26,7 @@ func (c *CustomerServiceImpl) AddCustomer(ctx context.Context, customerRequest *
 	if errValidation != nil {
 		return "", errValidation
 	}
-	randomString := helper.RandomString(16)
-	customerId := `customer-` + randomString
+	customerId := `customer-` + helper.RandomString(16)
 	time, err := time.Parse(time.RFC1123Z, time.Now().Format(time.RFC1123Z))
 	helper.PanicIfError(err)
 	dataCutomer, _ := entity.NewCustomer(&entity.DTOCustomers{

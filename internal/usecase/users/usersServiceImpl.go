@@ -28,9 +28,8 @@ func (s *ServiceUsersImplement) AddUser(ctx context.Context, userRequest *http_r
 		return "", errValidation
 	}
 
-	randomString := helper.RandomString(16)
 	hashPassword := helper.HashAndSalt([]byte(userRequest.Password))
-	userId := `user-` + randomString
+	userId := `user-` + helper.RandomString(16)
 	time, err := time.Parse(time.RFC1123Z, time.Now().Format(time.RFC1123Z))
 
 	dataUser, err := entity.NewUsers(&entity.DTOUsers{
@@ -69,4 +68,12 @@ func (s *ServiceUsersImplement) FindUser(ctx context.Context, UserLogin *http_re
 		return nil, errors.New("password not match")
 	}
 	return http_response.DomainUsersToResponseUsers(user), nil
+}
+
+func (s *ServiceUsersImplement) GetUsers(ctx context.Context) ([]*http_response.UserResponse, error) {
+	users, err := s.UserRepo.GetUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return http_response.ListDomainUserToListUserResponse(users), nil
 }

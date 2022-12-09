@@ -5,6 +5,7 @@ import (
 	"assigment-final-project/helper"
 	"assigment-final-project/internal/delivery"
 	"assigment-final-project/internal/delivery/http_request"
+	"assigment-final-project/internal/delivery/http_response"
 	"github.com/go-playground/validator/v10"
 	"net/http"
 )
@@ -21,19 +22,19 @@ func (p *ProductsHandlerImpl) AddProduct(w http.ResponseWriter, r *http.Request)
 	requestProduct := &http_request.ProductsRequest{}
 	helper.ReadFromRequestBody(r, requestProduct)
 
-	response, err := p.serviceProducts.AddProduct(r.Context(), requestProduct)
+	result, err := p.serviceProducts.AddProduct(r.Context(), requestProduct)
 	if err != nil {
 		errors, ok := err.(validator.ValidationErrors)
 		if !ok {
-			delivery.ResponseDelivery(w, http.StatusInternalServerError, err.Error())
+			delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 			return
 		}
 
-		delivery.ResponseDelivery(w, http.StatusBadRequest, errors.Error())
+		delivery.ResponseDelivery(w, http.StatusBadRequest, nil, errors.Error())
 		return
 	}
 
-	delivery.ResponseDelivery(w, http.StatusCreated, response)
+	delivery.ResponseDelivery(w, http.StatusCreated, &http_response.Product{Product: result}, nil)
 }
 
 func (p *ProductsHandlerImpl) GetsFindAndDeleteProduct(w http.ResponseWriter, r *http.Request) {
@@ -42,29 +43,29 @@ func (p *ProductsHandlerImpl) GetsFindAndDeleteProduct(w http.ResponseWriter, r 
 	if query == "" {
 		products, err := p.serviceProducts.GetProducts(r.Context())
 		if err != nil {
-			delivery.ResponseDelivery(w, http.StatusInternalServerError, err.Error())
+			delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 			return
 		}
-		delivery.ResponseDelivery(w, http.StatusOK, products)
+		delivery.ResponseDelivery(w, http.StatusOK, &http_response.Product{Product: products}, nil)
 		return
 	}
 
 	if r.Method == http.MethodDelete {
-		response, err := p.serviceProducts.DeleteProductById(r.Context(), query)
+		result, err := p.serviceProducts.DeleteProductById(r.Context(), query)
 		if err != nil {
-			delivery.ResponseDelivery(w, http.StatusNotFound, err.Error())
+			delivery.ResponseDelivery(w, http.StatusNotFound, nil, err.Error())
 			return
 		}
-		delivery.ResponseDelivery(w, http.StatusOK, response)
+		delivery.ResponseDelivery(w, http.StatusOK, &http_response.Product{Product: result}, nil)
 		return
 	}
 
-	response, err := p.serviceProducts.FindProductById(r.Context(), query)
+	result, err := p.serviceProducts.FindProductById(r.Context(), query)
 	if err != nil {
-		delivery.ResponseDelivery(w, http.StatusNotFound, err.Error())
+		delivery.ResponseDelivery(w, http.StatusNotFound, nil, err.Error())
 		return
 	}
-	delivery.ResponseDelivery(w, http.StatusOK, response)
+	delivery.ResponseDelivery(w, http.StatusOK, result, nil)
 }
 
 func (p *ProductsHandlerImpl) UpdateProduct(w http.ResponseWriter, r *http.Request) {
@@ -72,25 +73,25 @@ func (p *ProductsHandlerImpl) UpdateProduct(w http.ResponseWriter, r *http.Reque
 	requestProduct := &http_request.ProductsRequest{}
 	helper.ReadFromRequestBody(r, requestProduct)
 
-	product, err := p.serviceProducts.UpdateProduct(r.Context(), requestProduct, query)
+	result, err := p.serviceProducts.UpdateProduct(r.Context(), requestProduct, query)
 	if err != nil {
 		errors, ok := err.(validator.ValidationErrors)
 		if !ok {
-			delivery.ResponseDelivery(w, http.StatusInternalServerError, err.Error())
+			delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 			return
 		}
-		delivery.ResponseDelivery(w, http.StatusBadRequest, errors.Error())
+		delivery.ResponseDelivery(w, http.StatusBadRequest, nil, errors.Error())
 		return
 	}
 
-	delivery.ResponseDelivery(w, http.StatusOK, product)
+	delivery.ResponseDelivery(w, http.StatusOK, result, nil)
 }
 
 func (p *ProductsHandlerImpl) GetProducts(w http.ResponseWriter, r *http.Request) {
-	products, err := p.serviceProducts.GetProducts(r.Context())
+	result, err := p.serviceProducts.GetProducts(r.Context())
 	if err != nil {
-		delivery.ResponseDelivery(w, http.StatusInternalServerError, err.Error())
+		delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 		return
 	}
-	delivery.ResponseDelivery(w, http.StatusOK, products)
+	delivery.ResponseDelivery(w, http.StatusOK, result, nil)
 }

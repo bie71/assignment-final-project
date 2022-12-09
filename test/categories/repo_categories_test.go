@@ -5,7 +5,9 @@ import (
 	mysql_connection "assigment-final-project/internal/config/database/mysql"
 	repository "assigment-final-project/internal/repository/mysql"
 	"context"
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"strconv"
 	"testing"
 )
 
@@ -21,6 +23,22 @@ func TestInsertCategory(t *testing.T) {
 		Name:       "Console",
 	}))
 
+	assert.NoError(t, err)
+}
+
+func TestInsertListCategory(t *testing.T) {
+	listCategory := make([]*entity.Categories, 0)
+
+	for i := 0; i < 5; i++ {
+		catgory := entity.NewCategories(&entity.DTOCategories{
+			CategoryId: "123" + strconv.Itoa(i),
+			Name:       "Console",
+		})
+		listCategory = append(listCategory, catgory)
+	}
+
+	err := repoCategories.InsertListCategory(ctx, listCategory)
+	fmt.Println(err)
 	assert.NoError(t, err)
 }
 

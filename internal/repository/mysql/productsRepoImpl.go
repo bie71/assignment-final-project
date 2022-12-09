@@ -58,7 +58,7 @@ func (p *ProductsRepoImpl) FindProduct(ctx context.Context, productId string) (*
 		data := mapper.ProductsModelToDomainProducts(result.(*models.ProductsModel))
 		return data, nil
 	}
-	return nil, errors.New("product not found")
+	return nil, errors.New("data not found")
 }
 
 func (p *ProductsRepoImpl) GetProducts(ctx context.Context) ([]*entity.Products, error) {
@@ -78,7 +78,7 @@ func (p *ProductsRepoImpl) GetProducts(ctx context.Context) ([]*entity.Products,
 		data := mapper.ListModelProductsToListDomainProducts(result.([]*models.ProductsModel))
 		return data, nil
 	}
-	return nil, errors.New("product empty")
+	return nil, errors.New("data empty")
 }
 
 func (p *ProductsRepoImpl) UpdateProduct(ctx context.Context, product *entity.Products) (*entity.Products, error) {
@@ -100,9 +100,9 @@ func (p *ProductsRepoImpl) UpdateProduct(ctx context.Context, product *entity.Pr
 		helper.PanicIfError(err)
 		if affected == 0 {
 			defer helper.RecoverPanic()
-			panic("Failed Update Product")
+			panic("Failed Update")
 		} else {
-			log.Println("Success Update Product ", affected)
+			log.Println("Success Update ", affected)
 		}
 
 	})
@@ -128,9 +128,9 @@ func (p *ProductsRepoImpl) DeleteProduct(ctx context.Context, productId string) 
 		helper.PanicIfError(err)
 		if affected == 0 {
 			defer helper.RecoverPanic()
-			panic("Failed Delete Product")
+			panic("Failed Delete")
 		} else {
-			log.Println("Success Delete Product ", affected)
+			log.Println("Success Delete", affected)
 		}
 
 	})

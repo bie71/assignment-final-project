@@ -2,6 +2,10 @@ package http_response
 
 import entity "assigment-final-project/domain/entity/categories"
 
+type Category struct {
+	Category any `json:"category"`
+}
+
 type CategoryResponse struct {
 	CategoryId string `json:"category_id"`
 	Name       string `json:"name"`

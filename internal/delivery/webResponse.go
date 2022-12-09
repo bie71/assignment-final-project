@@ -11,16 +11,29 @@ type WebResponse struct {
 }
 
 type Status struct {
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
+	Message      string  `json:"message"`
+	Error        bool    `json:"error"`
+	ErrorMessage any     `json:"error_message"`
+	Data         *Result `json:"data"`
 }
 
-func ResponseDelivery(w http.ResponseWriter, code int, data interface{}) {
+type Result struct {
+	Result any `json:"result"`
+}
+
+func ResponseDelivery(w http.ResponseWriter, code int, data any, errMsg any) {
+	var err = false
+	if errMsg != nil {
+		err = true
+	}
+
 	response := &WebResponse{
 		Code: code,
 		Status: &Status{
-			Message: http.StatusText(code),
-			Data:    data,
+			Message:      http.StatusText(code),
+			Error:        err,
+			ErrorMessage: errMsg,
+			Data:         &Result{Result: data},
 		},
 	}
 	w.Header().Add("Content-Type", "application/json")

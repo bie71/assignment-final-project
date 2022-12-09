@@ -58,7 +58,7 @@ func (c *CustomerRepoImpl) FindCustomerById(ctx context.Context, customerId, pho
 		data := mapper.ModelsToDomainCustomers(result.(*models.CustomerModels))
 		return data, nil
 	}
-	return nil, errors.New("customer not found")
+	return nil, errors.New("data not found")
 }
 
 func (c *CustomerRepoImpl) GetCustomers(ctx context.Context) ([]*entity.Customers, error) {
@@ -78,7 +78,7 @@ func (c *CustomerRepoImpl) GetCustomers(ctx context.Context) ([]*entity.Customer
 		data := mapper.ListModelToDomainListCustomer(result.([]*models.CustomerModels))
 		return data, nil
 	}
-	return nil, errors.New("customer not found")
+	return nil, errors.New("data empty")
 }
 
 func (c *CustomerRepoImpl) DeleteCustomerById(ctx context.Context, customerId, phone string) error {
@@ -100,9 +100,9 @@ func (c *CustomerRepoImpl) DeleteCustomerById(ctx context.Context, customerId, p
 		helper.PanicIfError(err)
 		if affected == 0 {
 			defer helper.RecoverPanic()
-			panic("Failed Delete Customer")
+			panic("Failed Delete")
 		} else {
-			log.Println("Success Delete Customer ", affected)
+			log.Println("Success Delete", affected)
 		}
 
 	})

@@ -58,7 +58,7 @@ func (c *CategoryRepoImpl) FindCategory(ctx context.Context, categoryId string) 
 		data := mapper.ModelCategoriesToDomainCategories(result.(*models.CategoriesModel))
 		return data, nil
 	}
-	return nil, errors.New("category not found")
+	return nil, errors.New("data not found")
 }
 
 func (c *CategoryRepoImpl) GetCategories(ctx context.Context) ([]*entity.Categories, error) {
@@ -78,7 +78,7 @@ func (c *CategoryRepoImpl) GetCategories(ctx context.Context) ([]*entity.Categor
 		data := mapper.ListModelCategoriesToListDomainCategories(result.([]*models.CategoriesModel))
 		return data, nil
 	}
-	return nil, errors.New("category not found")
+	return nil, errors.New("data empty")
 }
 
 func (c *CategoryRepoImpl) DeleteCategory(ctx context.Context, categoryId string) error {
@@ -100,11 +100,30 @@ func (c *CategoryRepoImpl) DeleteCategory(ctx context.Context, categoryId string
 		helper.PanicIfError(err)
 		if affected == 0 {
 			defer helper.RecoverPanic()
-			panic("Failed Delete Category")
+			panic("Failed Delete")
 		} else {
-			log.Println("Success Delete Category ", affected)
+			log.Println("Success Delete ", affected)
 		}
 
+	})
+	return errTx
+}
+
+func (c *CategoryRepoImpl) InsertListCategory(ctx context.Context, categories []*entity.Categories) error {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	errTx := dbq.Tx(ctx, c.db, func(tx interface{}, Q dbq.QFn, E dbq.EFn, txCommit dbq.TxCommit) {
+		listmodelDbStruct := mapper.DbqStructModelToListInterface(categories)
+		stmt := dbq.INSERTStmt(models.TableNameCategories(), models.FieldNameCategories(), len(listmodelDbStruct), dbq.MySQL)
+		result, errStore := E(ctx, stmt, nil, listmodelDbStruct)
+		if errStore != nil {
+			log.Println(errStore)
+			return
+		}
+		errCommit := txCommit()
+		row, errCommit := result.RowsAffected()
+		helper.PanicIfError(errCommit)
+		log.Println("Succes Insert : ", row)
 	})
 	return errTx
 }

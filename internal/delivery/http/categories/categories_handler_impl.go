@@ -12,16 +12,40 @@ type CategoryHandlerImpl struct {
 	categoryService usecase.CategoryService
 }
 
-func (c *CategoryHandlerImpl) CreateCategory(w http.ResponseWriter, r *http.Request) {
-	categoryRequest := &http_request.CategoryRequest{}
-	helper.ReadFromRequestBody(r, categoryRequest)
+func NewCategoryHandlerImpl(categoryService usecase.CategoryService) *CategoryHandlerImpl {
+	return &CategoryHandlerImpl{categoryService: categoryService}
+}
 
-	category, err := c.categoryService.AddCategory(r.Context(), categoryRequest)
-	if err != nil {
-		delivery.ResponseDelivery(w, http.StatusBadRequest, err.Error())
+func (c *CategoryHandlerImpl) CreateCategory(w http.ResponseWriter, r *http.Request) {
+	var v interface{}
+	helper.ReadFromRequestBody(r, &v)
+	switch v := v.(type) {
+	case []interface{}:
+		// it's an array
+		categories := make([]*http_request.CategoryRequest, 0)
+		for _, data := range v {
+			m := data.(map[string]interface{})
+			s := m["name"].(string)
+			categories = append(categories, &http_request.CategoryRequest{Name: s})
+		}
+		category, err := c.categoryService.AddCategories(r.Context(), categories)
+		if err != nil {
+			delivery.ResponseDelivery(w, http.StatusBadRequest, nil, err.Error())
+			return
+		}
+		delivery.ResponseDelivery(w, http.StatusCreated, category, nil)
 		return
+	case map[string]interface{}:
+		// it's an object
+		s := v["name"].(string)
+		category, err := c.categoryService.AddCategory(r.Context(), &http_request.CategoryRequest{Name: s})
+		if err != nil {
+			delivery.ResponseDelivery(w, http.StatusBadRequest, nil, err.Error())
+			return
+		}
+		delivery.ResponseDelivery(w, http.StatusCreated, category, nil)
 	}
-	delivery.ResponseDelivery(w, http.StatusCreated, category)
+
 }
 
 func (c *CategoryHandlerImpl) FindAndDeleteCategory(w http.ResponseWriter, r *http.Request) {
@@ -30,27 +54,36 @@ func (c *CategoryHandlerImpl) FindAndDeleteCategory(w http.ResponseWriter, r *ht
 	if r.Method == http.MethodDelete {
 		data, err := c.categoryService.DeleteCategoryById(r.Context(), query)
 		if err != nil {
-			delivery.ResponseDelivery(w, http.StatusNotFound, err.Error())
+			delivery.ResponseDelivery(w, http.StatusNotFound, nil, err.Error())
 			return
 		}
-		delivery.ResponseDelivery(w, http.StatusOK, data)
+		delivery.ResponseDelivery(w, http.StatusOK, data, nil)
 		return
 	}
 
 	if query == "" {
 		data, err := c.categoryService.GetCategories(r.Context())
 		if err != nil {
-			delivery.ResponseDelivery(w, http.StatusInternalServerError, err.Error())
+			delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 			return
 		}
-		delivery.ResponseDelivery(w, http.StatusOK, data)
+		delivery.ResponseDelivery(w, http.StatusOK, data, nil)
 		return
 	}
 
 	data, err := c.categoryService.FindCategoryById(r.Context(), query)
 	if err != nil {
-		delivery.ResponseDelivery(w, http.StatusNotFound, err.Error())
+		delivery.ResponseDelivery(w, http.StatusNotFound, nil, err.Error())
 		return
 	}
-	delivery.ResponseDelivery(w, http.StatusOK, data)
+	delivery.ResponseDelivery(w, http.StatusOK, data, nil)
+}
+
+func (c *CategoryHandlerImpl) GetCategories(w http.ResponseWriter, r *http.Request) {
+	data, err := c.categoryService.GetCategories(r.Context())
+	if err != nil {
+		delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
+		return
+	}
+	delivery.ResponseDelivery(w, http.StatusOK, data, nil)
 }

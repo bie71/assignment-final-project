@@ -58,7 +58,7 @@ func (u *UsersRepoImpl) GetUsers(ctx context.Context) ([]*entity.Users, error) {
 		data := mapper.ToListDomainUser(result.([]*models.UsersModels))
 		return data, nil
 	}
-	return nil, errors.New("data users is empty")
+	return nil, errors.New("data empty")
 }
 
 func (u *UsersRepoImpl) FindUserById(ctx context.Context, userId string) (*entity.Users, error) {
@@ -78,7 +78,7 @@ func (u *UsersRepoImpl) FindUserById(ctx context.Context, userId string) (*entit
 		data := mapper.ModelsUsersToDomainUsers(result.(*models.UsersModels))
 		return data, nil
 	}
-	return nil, errors.New("data users is not found")
+	return nil, errors.New("data not found")
 }
 
 func (u *UsersRepoImpl) FindUserByUsername(ctx context.Context, userName string) (*entity.Users, error) {
@@ -98,7 +98,7 @@ func (u *UsersRepoImpl) FindUserByUsername(ctx context.Context, userName string)
 		data := mapper.ModelsUsersToDomainUsers(result.(*models.UsersModels))
 		return data, nil
 	}
-	return nil, errors.New("data users is not found")
+	return nil, errors.New("data not found")
 }
 
 func (u *UsersRepoImpl) UpdateById(ctx context.Context, dataUser *entity.Users, userId string) error {
@@ -119,9 +119,9 @@ func (u *UsersRepoImpl) UpdateById(ctx context.Context, dataUser *entity.Users, 
 		helper.PanicIfError(err)
 		if affected == 0 {
 			defer helper.RecoverPanic()
-			panic("Failed Update User")
+			panic("Failed Update")
 		} else {
-			log.Println("Success Updated user ", affected)
+			log.Println("Success Updated", affected)
 		}
 
 	})
@@ -146,9 +146,9 @@ func (u *UsersRepoImpl) DeleteById(ctx context.Context, userId string) error {
 		helper.PanicIfError(err)
 		if affected == 0 {
 			defer helper.RecoverPanic()
-			panic("Failed Delete User")
+			panic("Failed Delete")
 		} else {
-			log.Println("Success Delete User ", affected)
+			log.Println("Success Delete", affected)
 		}
 
 	})

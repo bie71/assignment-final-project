@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+type Customer struct {
+	Customer any `json:"customer"`
+}
+
 type CustomerResponse struct {
 	CustomerId string    `json:"customer_id"`
 	Name       string    `json:"name"`

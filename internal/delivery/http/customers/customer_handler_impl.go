@@ -22,11 +22,10 @@ func (c *CustomerHandlerImpl) AddCustomer(w http.ResponseWriter, r *http.Request
 
 	data, err := c.customerService.AddCustomer(r.Context(), customerRequest)
 	if err != nil {
-		delivery.ResponseDelivery(w, http.StatusBadRequest, err.Error())
+		delivery.ResponseDelivery(w, http.StatusBadRequest, nil, err.Error())
 		return
 	}
-	delivery.ResponseDelivery(w, http.StatusCreated, data)
-	return
+	delivery.ResponseDelivery(w, http.StatusCreated, data, nil)
 }
 
 func (c *CustomerHandlerImpl) GetAndDeleteCustomer(w http.ResponseWriter, r *http.Request) {
@@ -35,27 +34,27 @@ func (c *CustomerHandlerImpl) GetAndDeleteCustomer(w http.ResponseWriter, r *htt
 	if r.Method == http.MethodDelete {
 		data, err := c.customerService.DeleteCustomer(r.Context(), customerId, customerId)
 		if err != nil {
-			delivery.ResponseDelivery(w, http.StatusNotFound, err.Error())
+			delivery.ResponseDelivery(w, http.StatusNotFound, nil, err.Error())
 			return
 		}
-		delivery.ResponseDelivery(w, http.StatusOK, data)
+		delivery.ResponseDelivery(w, http.StatusOK, data, nil)
 		return
 	}
 
 	if customerId == "" {
 		data, err := c.customerService.GetCustomers(r.Context())
 		if err != nil {
-			delivery.ResponseDelivery(w, http.StatusInternalServerError, err.Error())
+			delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 			return
 		}
-		delivery.ResponseDelivery(w, http.StatusOK, data)
+		delivery.ResponseDelivery(w, http.StatusOK, data, nil)
 		return
 	}
 
 	data, err := c.customerService.FindCustomer(r.Context(), customerId, customerId)
 	if err != nil {
-		delivery.ResponseDelivery(w, http.StatusNotFound, err.Error())
+		delivery.ResponseDelivery(w, http.StatusNotFound, nil, err.Error())
 		return
 	}
-	delivery.ResponseDelivery(w, http.StatusOK, data)
+	delivery.ResponseDelivery(w, http.StatusOK, data, nil)
 }
