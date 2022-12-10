@@ -1,7 +1,7 @@
 package mysql_connection
 
 import (
-	_ "assigment-final-project/db"
+	_ "assigment-final-project/helper"
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"

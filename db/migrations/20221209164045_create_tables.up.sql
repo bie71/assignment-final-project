@@ -2,11 +2,10 @@ create table if not exists users
 (
         user_id    varchar(50) primary key,
         name       varchar(200),
-        username   varchar(100) not null,
+        username   varchar(100) unique not null,
         password   varchar(200) not null,
         user_type  varchar(100),
-        created_at datetime    default CURRENT_TIMESTAMP,
-        UNIQUE (username)
+        created_at datetime default CURRENT_TIMESTAMP
 ) engine = innoDB;
 
 
@@ -45,22 +44,15 @@ create table if not exists coupons_prefix (
     minimum_price bigint,
     discount int,
     expire_date datetime,
-    criteria_id int
-);
-
-create table if not exists criteria (
-    id int primary key auto_increment,
-    name varchar(200) unique
+    criteria varchar(200)
 );
 
 
 alter table products add constraint fk_product_category foreign key products(category_id)
-    references categories(category_id) on delete set null;
+    references categories(category_id) on delete set null on update cascade ;
 
 
 alter table coupons add constraint fk_coupon_customer foreign key coupons(customer_id)
-    references customers(customer_id) on delete cascade;
+    references customers(customer_id) on delete cascade on update cascade ;
 
-alter table coupons_prefix add constraint fk_coupon_prefix_criteria foreign key coupons_prefix(criteria_id)
-    references criteria(id) on delete set null;
 

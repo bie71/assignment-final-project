@@ -1,4 +1,4 @@
-package db
+package helper
 
 import (
 	"github.com/joho/godotenv"

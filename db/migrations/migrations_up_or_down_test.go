@@ -1,7 +1,7 @@
 package migrations
 
 import (
-	_ "assigment-final-project/db"
+	_ "assigment-final-project/helper"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"

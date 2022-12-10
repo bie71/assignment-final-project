@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "assigment-final-project/db"
+	_ "assigment-final-project/helper"
 	mysql_connection "assigment-final-project/internal/config/database/mysql"
 	categories_handler "assigment-final-project/internal/delivery/http/categories"
 	"assigment-final-project/internal/delivery/http/customers"
