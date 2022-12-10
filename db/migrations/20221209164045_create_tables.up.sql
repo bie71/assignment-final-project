@@ -40,11 +40,12 @@ create table if not exists coupons (
 
 create table if not exists coupons_prefix (
     id int primary key auto_increment,
-    prefix_name varchar(200) unique,
+    prefix_name varchar(200),
     minimum_price bigint,
     discount int,
     expire_date datetime,
-    criteria varchar(200)
+    criteria varchar(200),
+    created_at datetime default current_timestamp
 );
 
 
