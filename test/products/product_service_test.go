@@ -12,11 +12,10 @@ var serviceProduct = usecase.NewProductsServiceImpl(repo, validation)
 
 func TestAddProduct(t *testing.T) {
 	dataRequest := &http_request.ProductsRequest{
-		Name:             "ps 5",
-		Price:            1500,
-		CategoryId:       "console",
-		Stock:            20,
-		ProductCondition: "new",
+		Name:       "ps 5",
+		Price:      1500,
+		CategoryId: "console",
+		Stock:      20,
 	}
 	response, err := serviceProduct.AddProduct(ctx, dataRequest)
 	if err != nil {
@@ -55,11 +54,10 @@ func TestFindProductById(t *testing.T) {
 
 func TestUpdateById(t *testing.T) {
 	dataRequest := &http_request.ProductsRequest{
-		Name:             "ps 5 updated",
-		Price:            2000,
-		CategoryId:       "console updated",
-		Stock:            30,
-		ProductCondition: "second",
+		Name:       "ps 5 updated",
+		Price:      2000,
+		CategoryId: "console updated",
+		Stock:      30,
 	}
 
 	response, err := serviceProduct.UpdateProduct(ctx, dataRequest, "product-ytRvt5O3Q7glxSww")
@@ -72,7 +70,6 @@ func TestUpdateById(t *testing.T) {
 	assert.NotEmpty(t, response)
 	assert.Equal(t, "ps 5 updated", response.Name)
 	assert.Equal(t, "console updated", response.CategoryId)
-	assert.Equal(t, "second", response.ProductCondition)
 }
 
 func TestDeleteById(t *testing.T) {

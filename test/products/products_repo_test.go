@@ -20,12 +20,11 @@ var (
 
 func TestInsertProduct(t *testing.T) {
 	dataProduct := entity.NewProducts(&entity.DTOProducts{
-		ProductId:         "1234",
-		Name:              "handphone",
-		Price:             500,
-		CategoryId:        "gadget",
-		Stock:             10,
-		ProductsCondition: "new",
+		ProductId:  "1234",
+		Name:       "handphone",
+		Price:      500,
+		CategoryId: "123",
+		Stock:      10,
 	})
 
 	err := repo.InsertProducts(ctx, dataProduct)
@@ -70,12 +69,11 @@ func TestDeleteProduct(t *testing.T) {
 
 func TestUpdateProduct(t *testing.T) {
 	dataProduct := entity.NewProducts(&entity.DTOProducts{
-		ProductId:         "123",
-		Name:              "handphone updated",
-		Price:             200,
-		CategoryId:        "gadget updated",
-		Stock:             10,
-		ProductsCondition: "second",
+		ProductId:  "123",
+		Name:       "handphone updated",
+		Price:      200,
+		CategoryId: "gadget updated",
+		Stock:      10,
 	})
 
 	productUpdate, err := repo.UpdateProduct(ctx, dataProduct)

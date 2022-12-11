@@ -5,7 +5,6 @@ import (
 	"assigment-final-project/helper"
 	"assigment-final-project/internal/delivery"
 	"assigment-final-project/internal/delivery/http_request"
-	"assigment-final-project/internal/delivery/http_response"
 	"github.com/go-playground/validator/v10"
 	"net/http"
 )
@@ -34,7 +33,7 @@ func (p *ProductsHandlerImpl) AddProduct(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	delivery.ResponseDelivery(w, http.StatusCreated, &http_response.Product{Product: result}, nil)
+	delivery.ResponseDelivery(w, http.StatusCreated, result, nil)
 }
 
 func (p *ProductsHandlerImpl) GetsFindAndDeleteProduct(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +45,7 @@ func (p *ProductsHandlerImpl) GetsFindAndDeleteProduct(w http.ResponseWriter, r 
 			delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 			return
 		}
-		delivery.ResponseDelivery(w, http.StatusOK, &http_response.Product{Product: products}, nil)
+		delivery.ResponseDelivery(w, http.StatusOK, products, nil)
 		return
 	}
 
@@ -56,7 +55,7 @@ func (p *ProductsHandlerImpl) GetsFindAndDeleteProduct(w http.ResponseWriter, r 
 			delivery.ResponseDelivery(w, http.StatusNotFound, nil, err.Error())
 			return
 		}
-		delivery.ResponseDelivery(w, http.StatusOK, &http_response.Product{Product: result}, nil)
+		delivery.ResponseDelivery(w, http.StatusOK, result, nil)
 		return
 	}
 

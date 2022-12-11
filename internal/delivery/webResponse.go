@@ -6,12 +6,12 @@ import (
 )
 
 type WebResponse struct {
-	Code   int     `json:"code"`
-	Status *Status `json:"status"`
+	Code    int     `json:"code"`
+	Message string  `json:"message"`
+	Status  *Status `json:"status"`
 }
 
 type Status struct {
-	Message      string  `json:"message"`
 	Error        bool    `json:"error"`
 	ErrorMessage any     `json:"error_message"`
 	Data         *Result `json:"data"`
@@ -28,9 +28,9 @@ func ResponseDelivery(w http.ResponseWriter, code int, data any, errMsg any) {
 	}
 
 	response := &WebResponse{
-		Code: code,
+		Code:    code,
+		Message: http.StatusText(code),
 		Status: &Status{
-			Message:      http.StatusText(code),
 			Error:        err,
 			ErrorMessage: errMsg,
 			Data:         &Result{Result: data},
