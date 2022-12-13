@@ -13,7 +13,7 @@ type CouponsPrefixModel struct {
 }
 
 func TableNameCouponsPrefix() string {
-	return "coupons_prefix"
+	return "initial_coupons"
 }
 func FieldNameCoupounsPrefix() []string {
 	return []string{

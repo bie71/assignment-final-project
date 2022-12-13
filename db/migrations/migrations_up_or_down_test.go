@@ -17,9 +17,9 @@ func TestCreateMigrations(t *testing.T) {
 
 	dbDriver := os.Getenv("DB_DRIVER")
 	dbName := os.Getenv("DB_NAME")
-	dbUser := os.Getenv("DB_USERNAME")
+	dbUser := os.Getenv("DB_ROOT")
 	dbHost := os.Getenv("DB_HOST")
-	dbPass := os.Getenv("DB_PASSWORD")
+	dbPass := os.Getenv("DB_ROOT_PASSWORD")
 	dbPort := os.Getenv("DB_PORT")
 
 	connection := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPass, dbHost, dbPort, dbName)

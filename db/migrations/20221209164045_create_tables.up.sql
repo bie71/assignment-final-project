@@ -38,7 +38,7 @@ create table if not exists coupons (
     customer_id varchar(50)
 );
 
-create table if not exists coupons_prefix (
+create table if not exists initial_coupons (
     id int primary key auto_increment,
     prefix_name varchar(200),
     minimum_price bigint,
@@ -48,6 +48,32 @@ create table if not exists coupons_prefix (
     created_at datetime default current_timestamp
 );
 
+create table if not exists transaction (
+  transaction_id varchar(50) primary key,
+  customer_id varchar(50),
+  coupon_code varchar(50),
+  total_price bigint unsigned,
+  discount int unsigned,
+  total_price_after_discount bigint unsigned,
+  purchase_date datetime
+);
+
+create table if not exists transaction_items (
+    id int primary key auto_increment,
+    transaction_id varchar(50),
+    product_id varchar(50),
+    quantity int unsigned
+);
+
+
+CREATE TRIGGER update_stock_item
+    AFTER INSERT
+    ON transaction_items
+    FOR EACH ROW
+    UPDATE products
+    SET stock = stock - NEW.quantity
+    WHERE product_id = NEW.product_id;
+
 
 alter table products add constraint fk_product_category foreign key products(category_id)
     references categories(category_id) on delete set null on update cascade ;
@@ -56,4 +82,11 @@ alter table products add constraint fk_product_category foreign key products(cat
 alter table coupons add constraint fk_coupon_customer foreign key coupons(customer_id)
     references customers(customer_id) on delete cascade on update cascade ;
 
+alter table transaction add constraint fk_transaction_customer foreign key transaction(customer_id)
+    references customers(customer_id) on delete set null on update cascade ;
 
+alter table transaction_items add constraint fk_items_transaction foreign key transaction_items(transaction_id)
+references transaction(transaction_id) on delete cascade on update cascade ;
+
+alter table transaction_items add constraint fk_items_product foreign key transaction_items(product_id)
+    references products(product_id) on delete set null on update cascade ;

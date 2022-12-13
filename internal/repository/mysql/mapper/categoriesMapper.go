@@ -24,8 +24,7 @@ func ListModelCategoriesToListDomainCategories(list []*models.CategoriesModel) [
 	listDomain := make([]*entity.Categories, 0)
 
 	for _, model := range list {
-		categories := ModelCategoriesToDomainCategories(model)
-		listDomain = append(listDomain, categories)
+		listDomain = append(listDomain, ModelCategoriesToDomainCategories(model))
 	}
 	return listDomain
 }
@@ -34,8 +33,7 @@ func DbqStructModelToListInterface(listDomain []*entity.Categories) []interface{
 	list := make([]interface{}, 0)
 
 	for _, category := range listDomain {
-		dbqStruct := dbq.Struct(DomainCategoryToCategoryModels(category))
-		list = append(list, dbqStruct)
+		list = append(list, dbq.Struct(DomainCategoryToCategoryModels(category)))
 	}
 	return list
 }
