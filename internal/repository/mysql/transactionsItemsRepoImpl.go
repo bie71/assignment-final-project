@@ -30,7 +30,7 @@ func (t *TransactionItemsRepoImpl) InsertItems(ctx context.Context, items []*ent
 		stmt := dbq.INSERTStmt(models.TableNameTransactionItems(), models.FieldNameTransactionItems(), len(listdbqStruct), dbq.MySQL)
 		result, errStore := E(ctx, stmt, nil, listdbqStruct)
 		if errStore != nil {
-			log.Println(errStore)
+			helper.PanicIfError(errStore)
 			return
 		}
 		errCommit := txCommit()
@@ -69,7 +69,7 @@ func (t *TransactionItemsRepoImpl) DeleteTransactionItems(ctx context.Context, i
 		stmt := fmt.Sprintf(`DELETE FROM %s WHERE id = ?`, models.TableNameTransactionItems())
 		result, err := E(ctx, stmt, nil, id)
 		if err != nil {
-			log.Println(err)
+			helper.PanicIfError(err)
 			return
 		}
 
@@ -79,7 +79,6 @@ func (t *TransactionItemsRepoImpl) DeleteTransactionItems(ctx context.Context, i
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
-			defer helper.RecoverPanic()
 			panic("Failed Delete")
 		} else {
 			log.Println("Success Delete", affected)

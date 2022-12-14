@@ -30,7 +30,7 @@ func (c *CouponPrefixImpl) InsertPrefix(ctx context.Context, prefix *entity.Coup
 		stmt := dbq.INSERTStmt(models.TableNameCouponsPrefix(), models.FieldNameCoupounsPrefix(), 1, dbq.MySQL)
 		result, errStore := E(ctx, stmt, nil, modelDbStruct)
 		if errStore != nil {
-			log.Println(errStore)
+			helper.PanicIfError(errStore)
 			return
 		}
 		errCommit := txCommit()
@@ -69,7 +69,7 @@ func (c *CouponPrefixImpl) UpdatePrefix(ctx context.Context, prefix *entity.Coup
 		stmt := fmt.Sprintf(`UPDATE %s SET prefix_name = ?, minimum_price = ?, discount = ?, expire_date = ?, criteria = ? WHERE id = ?  `, models.TableNameCouponsPrefix())
 		result, err := E(ctx, stmt, nil, prefix.PrefixName(), prefix.MinimumPrice(), prefix.Discount(), prefix.ExpireDate(), prefix.Criteria(), prefix.Id())
 		if err != nil {
-			log.Println(err)
+			helper.PanicIfError(err)
 			return
 		}
 
@@ -79,7 +79,6 @@ func (c *CouponPrefixImpl) UpdatePrefix(ctx context.Context, prefix *entity.Coup
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
-			defer helper.RecoverPanic()
 			panic("Failed Update")
 		} else {
 			log.Println("Success Update ", affected)
@@ -97,7 +96,7 @@ func (c *CouponPrefixImpl) DeletePrefix(ctx context.Context, id int) error {
 		stmt := fmt.Sprintf(`DELETE FROM %s WHERE id = ? `, models.TableNameCouponsPrefix())
 		result, err := E(ctx, stmt, nil, id)
 		if err != nil {
-			log.Println(err)
+			helper.PanicIfError(err)
 			return
 		}
 
@@ -107,12 +106,30 @@ func (c *CouponPrefixImpl) DeletePrefix(ctx context.Context, id int) error {
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
-			defer helper.RecoverPanic()
 			panic("Failed Delete")
 		} else {
 			log.Println("Success Delete", affected)
 		}
 
+	})
+	return errTx
+}
+
+func (c *CouponPrefixImpl) InsertPrefixs(ctx context.Context, prefixs []*entity.CouponsPrefix) error {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	errTx := dbq.Tx(ctx, c.db, func(tx interface{}, Q dbq.QFn, E dbq.EFn, txCommit dbq.TxCommit) {
+		modelDbStruct := mapper.DbqStructCouponPrefixToListInterface(prefixs)
+		stmt := dbq.INSERTStmt(models.TableNameCouponsPrefix(), models.FieldNameCoupounsPrefix(), len(modelDbStruct), dbq.MySQL)
+		result, errStore := E(ctx, stmt, nil, modelDbStruct)
+		if errStore != nil {
+			helper.PanicIfError(errStore)
+			return
+		}
+		errCommit := txCommit()
+		row, errCommit := result.RowsAffected()
+		helper.PanicIfError(errCommit)
+		log.Println("Succes Insert : ", row)
 	})
 	return errTx
 }

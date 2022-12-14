@@ -3,6 +3,7 @@ package mapper
 import (
 	entity "assigment-final-project/domain/entity/coupons"
 	"assigment-final-project/internal/repository/mysql/models"
+	"github.com/rocketlaunchr/dbq/v2"
 )
 
 func DomainCounponsPrefixToModel(domain *entity.CouponsPrefix) *models.CouponsPrefixModel {
@@ -36,4 +37,13 @@ func ListModelToListDomainCouponsPrefix(list []*models.CouponsPrefixModel) []*en
 		listDomain = append(listDomain, prefix)
 	}
 	return listDomain
+}
+
+func DbqStructCouponPrefixToListInterface(listdomain []*entity.CouponsPrefix) []interface{} {
+	listInterface := make([]interface{}, 0)
+	for _, prefix := range listdomain {
+		dbStruct := dbq.Struct(DomainCounponsPrefixToModel(prefix))
+		listInterface = append(listInterface, dbStruct)
+	}
+	return listInterface
 }

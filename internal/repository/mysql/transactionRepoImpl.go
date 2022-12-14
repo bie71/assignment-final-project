@@ -1,6 +1,7 @@
 package repository
 
 import (
+	entity2 "assigment-final-project/domain/entity/products"
 	entity "assigment-final-project/domain/entity/transactions"
 	"assigment-final-project/helper"
 	"assigment-final-project/internal/repository/mysql/mapper"
@@ -30,7 +31,7 @@ func (t *TransactionRepoImpl) CreateTransaction(ctx context.Context, transaction
 		stmt := dbq.INSERTStmt(models.TabelNameTransaction(), models.FieldNameTransaction(), 1, dbq.MySQL)
 		result, errStore := E(ctx, stmt, nil, modelDbStruct)
 		if errStore != nil {
-			log.Println(errStore)
+			helper.PanicIfError(errStore)
 			return
 		}
 		errCommit := txCommit()
@@ -89,7 +90,7 @@ func (t *TransactionRepoImpl) DeleteTransaction(ctx context.Context, transaction
 		stmt := fmt.Sprintf(`DELETE FROM %s WHERE transaction_id = ?`, models.TabelNameTransaction())
 		result, err := E(ctx, stmt, nil, transactionId)
 		if err != nil {
-			log.Println(err)
+			helper.PanicIfError(err)
 			return
 		}
 
@@ -99,7 +100,6 @@ func (t *TransactionRepoImpl) DeleteTransaction(ctx context.Context, transaction
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
-			defer helper.RecoverPanic()
 			panic("Failed Delete")
 		} else {
 			log.Println("Success Delete", affected)
@@ -107,4 +107,25 @@ func (t *TransactionRepoImpl) DeleteTransaction(ctx context.Context, transaction
 
 	})
 	return errTx
+}
+
+func (t *TransactionRepoImpl) GetProductJoinCategory(ctx context.Context, productId string) (*entity2.ProductCategory, error) {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	stmt := fmt.Sprintf(`SELECT p.product_id, p.name as product_name, p.price, p.stock, c.category_id, c.name FROM %s p INNER JOIN %s c
+                    ON p.category_id = c.category_id WHERE p.product_id = ?`, models.TableNameProducts(), models.TableNameCategories())
+	opts := &dbq.Options{
+		SingleResult:   true,
+		ConcreteStruct: models.ProductCategoryModel{},
+		DecoderConfig:  dbq.StdTimeConversionConfig(),
+	}
+
+	result, err := dbq.Q(ctx, t.db, stmt, opts, productId)
+	helper.PanicIfError(err)
+	if result != nil {
+		data := mapper.ModelToProductCategoryModel(result.(*models.ProductCategoryModel))
+		return data, nil
+	}
+	return nil, errors.New("data not found")
 }

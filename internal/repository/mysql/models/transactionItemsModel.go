@@ -4,7 +4,7 @@ type TransactionItemsModel struct {
 	Id            int    `dbq:"id"`
 	TransactionId string `dbq:"transaction_id"`
 	ProductId     string `dbq:"product_id"`
-	Quantity      int    `dbq:"quantity"`
+	Quantity      uint   `dbq:"quantity"`
 }
 
 func TableNameTransactionItems() string {

@@ -22,15 +22,15 @@ func NewProductsRepoImpl(db *sql.DB) *ProductsRepoImpl {
 	return &ProductsRepoImpl{db: db}
 }
 
-func (p *ProductsRepoImpl) InsertProducts(ctx context.Context, products *entity.Products) error {
+func (p *ProductsRepoImpl) InsertProduct(ctx context.Context, product *entity.Products) error {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	errTx := dbq.Tx(ctx, p.db, func(tx interface{}, Q dbq.QFn, E dbq.EFn, txCommit dbq.TxCommit) {
-		modelDbStruct := dbq.Struct(mapper.DomainProductsToProductsModel(products))
+		modelDbStruct := dbq.Struct(mapper.DomainProductsToProductsModel(product))
 		stmt := dbq.INSERTStmt(models.TableNameProducts(), models.FieldNameProducts(), 1, dbq.MySQL)
 		result, errStore := E(ctx, stmt, nil, modelDbStruct)
 		if errStore != nil {
-			log.Println(errStore)
+			helper.PanicIfError(errStore)
 			return
 		}
 		errCommit := txCommit()
@@ -89,7 +89,7 @@ func (p *ProductsRepoImpl) UpdateProduct(ctx context.Context, product *entity.Pr
 		stmt := fmt.Sprintf(`UPDATE %s SET name = ?, price = ?, category_id = ?, stock = ? WHERE product_id = ? `, models.TableNameProducts())
 		result, err := E(ctx, stmt, nil, product.NameProduct(), product.Price(), product.Category(), product.Stock(), product.ProductId())
 		if err != nil {
-			log.Println(err)
+			helper.PanicIfError(err)
 			return
 		}
 
@@ -99,7 +99,6 @@ func (p *ProductsRepoImpl) UpdateProduct(ctx context.Context, product *entity.Pr
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
-			defer helper.RecoverPanic()
 			panic("Failed Update")
 		} else {
 			log.Println("Success Update ", affected)
@@ -117,7 +116,7 @@ func (p *ProductsRepoImpl) DeleteProduct(ctx context.Context, productId string) 
 		stmt := fmt.Sprintf(`DELETE FROM %s WHERE product_id = ? `, models.TableNameProducts())
 		result, err := E(ctx, stmt, nil, productId)
 		if err != nil {
-			log.Println(err)
+			helper.PanicIfError(err)
 			return
 		}
 
@@ -127,12 +126,30 @@ func (p *ProductsRepoImpl) DeleteProduct(ctx context.Context, productId string) 
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
-			defer helper.RecoverPanic()
 			panic("Failed Delete")
 		} else {
 			log.Println("Success Delete", affected)
 		}
 
+	})
+	return errTx
+}
+
+func (p *ProductsRepoImpl) InsertProducts(ctx context.Context, products []*entity.Products) error {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	errTx := dbq.Tx(ctx, p.db, func(tx interface{}, Q dbq.QFn, E dbq.EFn, txCommit dbq.TxCommit) {
+		modelDbStruct := mapper.DbqListProductToListInterface(products)
+		stmt := dbq.INSERTStmt(models.TableNameProducts(), models.FieldNameProducts(), len(modelDbStruct), dbq.MySQL)
+		result, errStore := E(ctx, stmt, nil, modelDbStruct)
+		if errStore != nil {
+			helper.PanicIfError(errStore)
+			return
+		}
+		errCommit := txCommit()
+		row, errCommit := result.RowsAffected()
+		helper.PanicIfError(errCommit)
+		log.Println("Succes Insert : ", row)
 	})
 	return errTx
 }

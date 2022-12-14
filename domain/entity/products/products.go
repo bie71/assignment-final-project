@@ -1,5 +1,7 @@
 package entity
 
+import entity "assigment-final-project/domain/entity/categories"
+
 type Products struct {
 	productId  string
 	name       string
@@ -13,6 +15,14 @@ type DTOProducts struct {
 	Name       string
 	Price      uint
 	CategoryId string
+	Stock      uint
+}
+
+type ProductCategory struct {
+	ProductId  string
+	Name       string
+	Price      uint
+	CategoryId *entity.Categories
 	Stock      uint
 }
 

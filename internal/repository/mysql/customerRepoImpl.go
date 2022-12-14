@@ -30,7 +30,7 @@ func (c *CustomerRepoImpl) InsertCustomer(ctx context.Context, customer *entity.
 		stmt := dbq.INSERTStmt(models.TableNameCustomer(), models.FieldNameCustomers(), 1, dbq.MySQL)
 		result, errStore := E(ctx, stmt, nil, modelDbStruct)
 		if errStore != nil {
-			log.Println(errStore)
+			helper.PanicIfError(errStore)
 			return
 		}
 		errCommit := txCommit()
@@ -89,7 +89,7 @@ func (c *CustomerRepoImpl) DeleteCustomerById(ctx context.Context, customerId, p
 		stmt := fmt.Sprintf(`DELETE FROM %s WHERE customer_id = ? OR contact = ? `, models.TableNameCustomer())
 		result, err := E(ctx, stmt, nil, customerId, phone)
 		if err != nil {
-			log.Println(err)
+			helper.PanicIfError(err)
 			return
 		}
 
@@ -99,12 +99,30 @@ func (c *CustomerRepoImpl) DeleteCustomerById(ctx context.Context, customerId, p
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
-			defer helper.RecoverPanic()
 			panic("Failed Delete")
 		} else {
 			log.Println("Success Delete", affected)
 		}
 
+	})
+	return errTx
+}
+
+func (c *CustomerRepoImpl) InsertCustomers(ctx context.Context, customers []*entity.Customers) error {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	errTx := dbq.Tx(ctx, c.db, func(tx interface{}, Q dbq.QFn, E dbq.EFn, txCommit dbq.TxCommit) {
+		modelDbStruct := mapper.DbqListCustomerToListInterface(customers)
+		stmt := dbq.INSERTStmt(models.TableNameCustomer(), models.FieldNameCustomers(), len(modelDbStruct), dbq.MySQL)
+		result, errStore := E(ctx, stmt, nil, modelDbStruct)
+		if errStore != nil {
+			helper.PanicIfError(errStore)
+			return
+		}
+		errCommit := txCommit()
+		row, errCommit := result.RowsAffected()
+		helper.PanicIfError(errCommit)
+		log.Println("Succes Insert : ", row)
 	})
 	return errTx
 }

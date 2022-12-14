@@ -1,6 +1,7 @@
 package repository
 
 import (
+	entity2 "assigment-final-project/domain/entity/products"
 	entity "assigment-final-project/domain/entity/transactions"
 	"context"
 )
@@ -10,4 +11,5 @@ type TransactionRepo interface {
 	FindTransaction(ctx context.Context, transactionId string) (*entity.Transaction, error)
 	GetTransactions(ctx context.Context) ([]*entity.Transaction, error)
 	DeleteTransaction(ctx context.Context, transactionId string) error
+	GetProductJoinCategory(ctx context.Context, productId string) (*entity2.ProductCategory, error)
 }

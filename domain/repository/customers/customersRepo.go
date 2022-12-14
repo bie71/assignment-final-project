@@ -7,6 +7,7 @@ import (
 
 type RepoCustomer interface {
 	InsertCustomer(ctx context.Context, customer *entity.Customers) error
+	InsertCustomers(ctx context.Context, customers []*entity.Customers) error
 	FindCustomerById(ctx context.Context, customerId, phone string) (*entity.Customers, error)
 	GetCustomers(ctx context.Context) ([]*entity.Customers, error)
 	DeleteCustomerById(ctx context.Context, customerId, phone string) error

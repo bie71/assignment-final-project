@@ -7,7 +7,7 @@ type TransactionModel struct {
 	CustomerId         string    `dbq:"customer_id"`
 	CouponCode         string    `dbq:"coupon_code"`
 	TotalPrice         uint64    `dbq:"total_price"`
-	Discount           uint      `dbq:"discount"`
+	Discount           uint64    `dbq:"discount"`
 	TotalAfterDiscount uint64    `dbq:"total_price_after_discount"`
 	PurchaseDate       time.Time `dbq:"purchase_date"`
 }

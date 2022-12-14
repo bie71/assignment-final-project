@@ -31,6 +31,7 @@ func (u *UsersRepoImpl) InsertUser(ctx context.Context, dataUser *entity.Users) 
 		stmt := dbq.INSERTStmt(models.TableNameUsers(), models.UsersFieldName(), 1, dbq.MySQL)
 		result, errStore := E(ctx, stmt, nil, modelDbStruct)
 		if errStore != nil {
+			helper.PanicIfError(errStore)
 			return
 		}
 		errCommit := txCommit()
@@ -109,6 +110,7 @@ func (u *UsersRepoImpl) UpdateById(ctx context.Context, dataUser *entity.Users, 
 		stmt := fmt.Sprintf(`UPDATE %s 	SET name = ?, password = ?, user_type = ?, created_at = ? WHERE user_id = ? OR username = ?`, models.TableNameUsers())
 		result, err := E(ctx, stmt, nil, dataUser.GetName(), dataUser.Password(), dataUser.UserType(), dataUser.CreatedAt(), userId, userId)
 		if err != nil {
+			helper.PanicIfError(err)
 			return
 		}
 
@@ -118,7 +120,6 @@ func (u *UsersRepoImpl) UpdateById(ctx context.Context, dataUser *entity.Users, 
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
-			defer helper.RecoverPanic()
 			panic("Failed Update")
 		} else {
 			log.Println("Success Updated", affected)
@@ -136,6 +137,7 @@ func (u *UsersRepoImpl) DeleteById(ctx context.Context, userId string) error {
 		stmt := fmt.Sprintf(`DELETE FROM %s WHERE user_id = ? OR username = ?`, models.TableNameUsers())
 		result, err := E(ctx, stmt, nil, userId, userId)
 		if err != nil {
+			helper.PanicIfError(err)
 			return
 		}
 
@@ -145,12 +147,30 @@ func (u *UsersRepoImpl) DeleteById(ctx context.Context, userId string) error {
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
-			defer helper.RecoverPanic()
 			panic("Failed Delete")
 		} else {
 			log.Println("Success Delete", affected)
 		}
 
+	})
+	return errTx
+}
+
+func (u *UsersRepoImpl) InsertUsers(ctx context.Context, dataUsers []*entity.Users) error {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	errTx := dbq.Tx(ctx, u.db, func(tx interface{}, Q dbq.QFn, E dbq.EFn, txCommit dbq.TxCommit) {
+		modelDbStruct := mapper.DbqListUsersToListInterface(dataUsers)
+		stmt := dbq.INSERTStmt(models.TableNameUsers(), models.UsersFieldName(), len(modelDbStruct), dbq.MySQL)
+		result, errStore := E(ctx, stmt, nil, modelDbStruct)
+		if errStore != nil {
+			helper.PanicIfError(errStore)
+			return
+		}
+		errCommit := txCommit()
+		row, errCommit := result.RowsAffected()
+		helper.PanicIfError(errCommit)
+		log.Println("Succes Insert : ", row)
 	})
 	return errTx
 }

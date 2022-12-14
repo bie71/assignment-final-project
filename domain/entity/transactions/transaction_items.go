@@ -4,14 +4,14 @@ type TransactionItems struct {
 	id            int
 	transactionId string
 	productId     string
-	quantity      int
+	quantity      uint
 }
 
 type DTOTransactionItems struct {
 	Id            int
 	TransactionId string
 	ProductId     string
-	Quantity      int
+	Quantity      uint
 }
 
 func NewTransactionItems(DTO *DTOTransactionItems) *TransactionItems {
@@ -35,6 +35,6 @@ func (t *TransactionItems) ProductId() string {
 	return t.productId
 }
 
-func (t *TransactionItems) Quantity() int {
+func (t *TransactionItems) Quantity() uint {
 	return t.quantity
 }

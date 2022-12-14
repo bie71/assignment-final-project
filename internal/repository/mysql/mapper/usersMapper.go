@@ -3,6 +3,7 @@ package mapper
 import (
 	"assigment-final-project/domain/entity/users"
 	"assigment-final-project/internal/repository/mysql/models"
+	"github.com/rocketlaunchr/dbq/v2"
 )
 
 func DomainUsersToModelsUsers(dataUsers *entity.Users) *models.UsersModels {
@@ -34,4 +35,14 @@ func ToListDomainUser(dataUsers []*models.UsersModels) []*entity.Users {
 		users = append(users, usersDomain)
 	}
 	return users
+}
+
+func DbqListUsersToListInterface(users []*entity.Users) []interface{} {
+	listInterface := make([]interface{}, 0)
+
+	for _, user := range users {
+		result := dbq.Struct(DomainUsersToModelsUsers(user))
+		listInterface = append(listInterface, result)
+	}
+	return listInterface
 }

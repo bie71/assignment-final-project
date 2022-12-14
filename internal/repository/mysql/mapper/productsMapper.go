@@ -3,6 +3,7 @@ package mapper
 import (
 	entity "assigment-final-project/domain/entity/products"
 	"assigment-final-project/internal/repository/mysql/models"
+	"github.com/rocketlaunchr/dbq/v2"
 )
 
 func DomainProductsToProductsModel(products *entity.Products) *models.ProductsModel {
@@ -33,4 +34,14 @@ func ListModelProductsToListDomainProducts(list []*models.ProductsModel) []*enti
 		listDomain = append(listDomain, product)
 	}
 	return listDomain
+}
+
+func DbqListProductToListInterface(listDomain []*entity.Products) []interface{} {
+	listInterface := make([]interface{}, 0)
+
+	for _, product := range listDomain {
+		result := dbq.Struct(DomainProductsToProductsModel(product))
+		listInterface = append(listInterface, result)
+	}
+	return listInterface
 }

@@ -30,7 +30,7 @@ func (c *CategoryRepoImpl) InsertCategory(ctx context.Context, category *entity.
 		stmt := dbq.INSERTStmt(models.TableNameCategories(), models.FieldNameCategories(), 1, dbq.MySQL)
 		result, errStore := E(ctx, stmt, nil, modelDbStruct)
 		if errStore != nil {
-			log.Println(errStore)
+			helper.PanicIfError(errStore)
 			return
 		}
 		errCommit := txCommit()
@@ -89,7 +89,7 @@ func (c *CategoryRepoImpl) DeleteCategory(ctx context.Context, categoryId string
 		stmt := fmt.Sprintf(`DELETE FROM %s WHERE category_id = ?`, models.TableNameCategories())
 		result, err := E(ctx, stmt, nil, categoryId)
 		if err != nil {
-			log.Println(err)
+			helper.PanicIfError(err)
 			return
 		}
 
@@ -99,7 +99,6 @@ func (c *CategoryRepoImpl) DeleteCategory(ctx context.Context, categoryId string
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
-			defer helper.RecoverPanic()
 			panic("Failed Delete")
 		} else {
 			log.Println("Success Delete ", affected)
@@ -117,7 +116,7 @@ func (c *CategoryRepoImpl) InsertListCategory(ctx context.Context, categories []
 		stmt := dbq.INSERTStmt(models.TableNameCategories(), models.FieldNameCategories(), len(listmodelDbStruct), dbq.MySQL)
 		result, errStore := E(ctx, stmt, nil, listmodelDbStruct)
 		if errStore != nil {
-			log.Println(errStore)
+			helper.PanicIfError(errStore)
 			return
 		}
 		errCommit := txCommit()
