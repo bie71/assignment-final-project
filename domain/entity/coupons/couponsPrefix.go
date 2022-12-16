@@ -6,7 +6,7 @@ type CouponsPrefix struct {
 	id           int
 	prefixName   string
 	minimumPrice int64
-	discount     int
+	discount     uint
 	expireDate   time.Time
 	criteria     string
 	createdAt    time.Time
@@ -16,7 +16,7 @@ type DTOCouponsPrefix struct {
 	Id           int
 	PrefixName   string
 	MinimumPrice int64
-	Discount     int
+	Discount     uint
 	ExpireDate   time.Time
 	Criteria     string
 	CreatedAt    time.Time
@@ -46,7 +46,7 @@ func (c *CouponsPrefix) MinimumPrice() int64 {
 	return c.minimumPrice
 }
 
-func (c *CouponsPrefix) Discount() int {
+func (c *CouponsPrefix) Discount() uint {
 	return c.discount
 }
 

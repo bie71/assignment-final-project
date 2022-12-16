@@ -29,11 +29,10 @@ func (s *ServiceUsersImplement) AddUser(ctx context.Context, userRequest *http_r
 	}
 
 	hashPassword := helper.HashAndSalt([]byte(userRequest.Password))
-	userId := `user-` + helper.RandomString(16)
 	time, err := time.Parse(time.RFC1123Z, time.Now().Format(time.RFC1123Z))
 
 	dataUser, err := entity.NewUsers(&entity.DTOUsers{
-		UserId:    userId,
+		UserId:    `user-` + helper.RandomString(16),
 		Name:      userRequest.Name,
 		Username:  userRequest.Username,
 		Password:  hashPassword,

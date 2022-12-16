@@ -21,3 +21,7 @@ drop table if exists products;
 drop table if exists coupons;
 
 drop table if exists initial_coupons;
+
+drop table if exists transaction;
+
+drop table if exists transaction_items;

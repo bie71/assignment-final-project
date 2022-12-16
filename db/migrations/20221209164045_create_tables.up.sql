@@ -25,7 +25,7 @@ create table if not exists categories (
 create table if not exists products (
      product_id varchar(50) primary key,
      name varchar(200),
-     price int,
+     price int unsigned,
      category_id varchar(50),
      stock int unsigned default 0
 );
@@ -42,7 +42,7 @@ create table if not exists initial_coupons (
     id int primary key auto_increment,
     prefix_name varchar(200),
     minimum_price bigint,
-    discount int,
+    discount int unsigned,
     expire_date datetime,
     criteria varchar(200),
     created_at datetime default current_timestamp
@@ -52,9 +52,9 @@ create table if not exists transaction (
   transaction_id varchar(50) primary key,
   customer_id varchar(50),
   coupon_code varchar(50),
-  total_price bigint unsigned,
-  discount int unsigned,
-  total_price_after_discount bigint unsigned,
+  total_price double unsigned,
+  discount float unsigned,
+  total_price_after_discount double unsigned,
   purchase_date datetime
 );
 

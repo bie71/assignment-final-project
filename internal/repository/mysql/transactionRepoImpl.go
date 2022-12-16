@@ -66,7 +66,7 @@ func (t *TransactionRepoImpl) GetTransactions(ctx context.Context) ([]*entity.Tr
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	stmt := fmt.Sprintf(`SELECT * FROM %s WHERE transaction_id = ?`, models.TabelNameTransaction())
+	stmt := fmt.Sprintf(`SELECT * FROM %s`, models.TabelNameTransaction())
 	opts := &dbq.Options{
 		SingleResult:   false,
 		ConcreteStruct: models.TransactionModel{},
@@ -126,6 +126,27 @@ func (t *TransactionRepoImpl) GetProductJoinCategory(ctx context.Context, produc
 	if result != nil {
 		data := mapper.ModelToProductCategoryModel(result.(*models.ProductCategoryModel))
 		return data, nil
+	}
+	return nil, errors.New("data not found")
+}
+
+func (t *TransactionRepoImpl) GetItemsProduct(ctx context.Context, transactionId string) ([]*entity.TransactionItemsProduct, error) {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	stmt := fmt.Sprintf(`SELECT ti.id, ti.transaction_id, p.product_id, p.name, p.price, ti.quantity FROM %s ti 
+    INNER JOIN %s p ON ti.product_id = p.product_id WHERE ti.transaction_id = ?`,
+		models.TableNameTransactionItems(), models.TableNameProducts())
+	opts := &dbq.Options{
+		SingleResult:   false,
+		ConcreteStruct: models.ItemsProductModel{},
+		DecoderConfig:  dbq.StdTimeConversionConfig(),
+	}
+
+	result, err := dbq.Q(ctx, t.db, stmt, opts, transactionId)
+	helper.PanicIfError(err)
+	if result != nil {
+		return mapper.ListItemsProductToListItemsProductDomain(result.([]*models.ItemsProductModel)), nil
 	}
 	return nil, errors.New("data not found")
 }

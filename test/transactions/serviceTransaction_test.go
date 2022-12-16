@@ -15,26 +15,38 @@ var (
 	repoCutomer        = repoItems.NewCustomerRepoImpl(db)
 	initialCoupons     = repoItems.NewCouponPrefixImpl(db)
 	coupons            = repoItems.NewCouponsRepoImpl(db)
-	transactionService = usecase.NewTransactionServiceImpl(repoTransaction, repoCutomer, repoItem, coupons, initialCoupons, validation)
-	validation         = validator.New()
+	categoryRepo       = repoItems.NewCategoryRepoImpl(db)
+	productRepo        = repoItems.NewProductsRepoImpl(db)
+	transactionService = usecase.NewTransactionServiceImpl(repoTransaction, repoCutomer, repoItem,
+		coupons, initialCoupons, productRepo, categoryRepo, validation)
+	validation = validator.New()
 )
 
 func TestInserTransactionService(t *testing.T) {
 	item := []*http_request.TransactionItemsRequest{
 		{
 			ProductId: "p4",
-			Quantity:  1,
+			Quantity:  3,
+		},
+		{
+			ProductId: "p1",
+			Quantity:  2,
 		},
 	}
 
 	data := &http_request.TransactionRequest{
-		TransactionId: "2",
 		CustomerId:    "bie7",
-		CouponCode:    "prime-je5FKTPDCq4vHwFe",
+		CouponCode:    "BASIC-xXGEuwCf6rLR0ABI",
 		PurchaseItems: item,
 	}
 
 	result, err := transactionService.AddTransaction(ctx, data)
 	log.Println("error", err)
 	fmt.Println(result)
+}
+
+func TestGetTransaction(t *testing.T) {
+	transaction, err := transactionService.GetTransaction(ctx)
+	fmt.Println(err)
+	fmt.Println(transaction)
 }

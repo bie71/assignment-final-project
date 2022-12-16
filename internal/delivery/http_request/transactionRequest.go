@@ -1,7 +1,6 @@
 package http_request
 
 type TransactionRequest struct {
-	TransactionId string                     `json:"transaction_id,omitempty" validate:"required"`
 	CustomerId    string                     `json:"customer_id,omitempty" validate:"required"`
 	CouponCode    string                     `json:"coupon_code,omitempty"`
 	PurchaseItems []*TransactionItemsRequest `json:"purchase_items" validate:"required,dive"`

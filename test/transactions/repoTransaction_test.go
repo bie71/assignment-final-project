@@ -26,10 +26,20 @@ func TestGetProductAndCategory(t *testing.T) {
 }
 
 func TestCreateTransaction(t *testing.T) {
-	repoTransaction.CreateTransaction(ctx, entity.NewTransaction(&entity.DTOTransaction{
+	err := repoTransaction.CreateTransaction(ctx, entity.NewTransaction(&entity.DTOTransaction{
 		TransactionId: "1",
 		CustomerId:    "bie7",
 		CouponCode:    "",
 		PurchaseDate:  time.Now(),
 	}))
+	assert.NoError(t, err)
+}
+
+func TestGetItemsProduct(t *testing.T) {
+	product, err := repoTransaction.GetItemsProduct(ctx, "transaction-37bsGLqNIenuLOxZ")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, product)
+	for _, itemsProduct := range product {
+		assert.NotEmpty(t, itemsProduct)
+	}
 }

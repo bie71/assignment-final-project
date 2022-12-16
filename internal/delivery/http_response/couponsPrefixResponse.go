@@ -9,7 +9,7 @@ type CouponsPrefixResponse struct {
 	Id           int       `json:"id"`
 	PrefixName   string    `json:"prefix_name" `
 	MinimumPrice int64     `json:"minimum_price" `
-	Discount     int       `json:"discount" `
+	Discount     uint      `json:"discount" `
 	ExpireDate   time.Time `json:"expire_date" `
 	Criteria     string    `json:"criteria"`
 	CreatedAt    time.Time `json:"created_at"`

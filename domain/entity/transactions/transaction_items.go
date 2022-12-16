@@ -14,6 +14,15 @@ type DTOTransactionItems struct {
 	Quantity      uint
 }
 
+type TransactionItemsProduct struct {
+	Id            int
+	TransactionId string
+	ProductId     string
+	Name          string
+	Price         uint
+	Quantity      uint
+}
+
 func NewTransactionItems(DTO *DTOTransactionItems) *TransactionItems {
 	return &TransactionItems{
 		id:            DTO.Id,

@@ -6,9 +6,9 @@ type Transaction struct {
 	transactionId      string
 	customerId         string
 	couponCode         string
-	totalPrice         uint64
-	discount           uint64
-	totalAfterDiscount uint64
+	totalPrice         float64
+	discount           float32
+	totalAfterDiscount float64
 	purchaseDate       time.Time
 }
 
@@ -16,9 +16,9 @@ type DTOTransaction struct {
 	TransactionId      string
 	CustomerId         string
 	CouponCode         string
-	TotalPrice         uint64
-	Discount           uint64
-	TotalAfterDiscount uint64
+	TotalPrice         float64
+	Discount           float32
+	TotalAfterDiscount float64
 	PurchaseDate       time.Time
 }
 
@@ -46,15 +46,15 @@ func (t *Transaction) CouponCode() string {
 	return t.couponCode
 }
 
-func (t *Transaction) TotalPrice() uint64 {
+func (t *Transaction) TotalPrice() float64 {
 	return t.totalPrice
 }
 
-func (t *Transaction) Discount() uint64 {
+func (t *Transaction) Discount() float32 {
 	return t.discount
 }
 
-func (t *Transaction) TotalAfterDiscount() uint64 {
+func (t *Transaction) TotalAfterDiscount() float64 {
 	return t.totalAfterDiscount
 }
 

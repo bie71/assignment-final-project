@@ -12,4 +12,5 @@ type TransactionRepo interface {
 	GetTransactions(ctx context.Context) ([]*entity.Transaction, error)
 	DeleteTransaction(ctx context.Context, transactionId string) error
 	GetProductJoinCategory(ctx context.Context, productId string) (*entity2.ProductCategory, error)
+	GetItemsProduct(ctx context.Context, transactionId string) ([]*entity.TransactionItemsProduct, error)
 }

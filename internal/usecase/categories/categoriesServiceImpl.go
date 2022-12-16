@@ -26,10 +26,8 @@ func (c *CategoryServiceImpl) AddCategory(ctx context.Context, categoryRequest *
 		return "", errValidation
 	}
 
-	categoryId := `category-` + helper.RandomString(16)
-
 	dataCategory := entity.NewCategories(&entity.DTOCategories{
-		CategoryId: categoryId,
+		CategoryId: `category-` + helper.RandomString(16),
 		Name:       categoryRequest.Name,
 	})
 
