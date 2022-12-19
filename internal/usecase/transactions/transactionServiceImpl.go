@@ -166,21 +166,22 @@ func (t *TransactionServiceImpl) AddTransaction(ctx context.Context, transaction
 	return result, nil
 }
 func (t *TransactionServiceImpl) GetTransaction(ctx context.Context) ([]*http_response.TransactionResponse, error) {
-	wg := sync.WaitGroup{}
-	chanListItem := make(chan []*http_response.TransactionItemsResponse)
-	transactions, err := t.repoTransaction.GetTransactions(ctx)
-	if err != nil {
-		return nil, err
-	}
-	wg.Add(1)
-	defer close(chanListItem)
-	go func() {
-		defer wg.Done()
-		for _, transaction := range transactions {
-			result, err2 := t.repoTransaction.GetItemsProduct(ctx, transaction.TransactionId())
-			helper.PanicIfError(err2)
-		}
-	}()
+	//wg := sync.WaitGroup{}
+	//chanListItem := make(chan []*http_response.TransactionItemsResponse)
+	//transactions, err := t.repoTransaction.GetTransactions(ctx)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//wg.Add(1)
+	//defer close(chanListItem)
+	//go func() {
+	//	defer wg.Done()
+	//	for _, transaction := range transactions {
+	//		result, err2 := t.repoTransaction.GetItemsProduct(ctx, transaction.TransactionId())
+	//		helper.PanicIfError(err2)
+	//	}
+	//}()
+	return nil, nil
 }
 
 func (t *TransactionServiceImpl) FindTransaction(ctx context.Context, transactionId string) (*http_response.TransactionResponse, error) {

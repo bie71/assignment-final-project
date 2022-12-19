@@ -25,18 +25,14 @@ var (
 func TestInserTransactionService(t *testing.T) {
 	item := []*http_request.TransactionItemsRequest{
 		{
-			ProductId: "p4",
-			Quantity:  3,
-		},
-		{
-			ProductId: "p1",
-			Quantity:  2,
+			ProductId: "p2",
+			Quantity:  4,
 		},
 	}
 
 	data := &http_request.TransactionRequest{
 		CustomerId:    "bie7",
-		CouponCode:    "BASIC-xXGEuwCf6rLR0ABI",
+		CouponCode:    "",
 		PurchaseItems: item,
 	}
 
