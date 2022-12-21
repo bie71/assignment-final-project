@@ -36,9 +36,9 @@ func Router(handlerUser users_interface.UserHandler, handlerCustomer customer_in
 	api.HandleFunc("/products", handlerProduct.UpdateProduct).Queries("id", "{id}").Methods(http.MethodPut)
 	api.HandleFunc("/products", handlerProduct.GetProducts).Methods(http.MethodGet)
 
-	api.HandleFunc("/coupons", hanlderCoupons.AddCoupon).Methods(http.MethodPost)
-	api.HandleFunc("/coupons", hanlderCoupons.GetCoupons).Methods(http.MethodGet)
-	api.HandleFunc("/coupons", hanlderCoupons.UpdateAndDeleteCoupon).Queries("id", "{id}").Methods(http.MethodPut, http.MethodDelete)
-
+	api.HandleFunc("/coupons/prefix", hanlderCoupons.AddCoupon).Methods(http.MethodPost)
+	api.HandleFunc("/coupons/prefix", hanlderCoupons.GetCoupons).Methods(http.MethodGet)
+	api.HandleFunc("/coupons/prefix", hanlderCoupons.UpdateAndDeleteCoupon).Queries("id", "{id}").Methods(http.MethodPut, http.MethodDelete)
+	api.HandleFunc("/coupons", hanlderCoupons.GetCouponsCustomer).Queries("customerid", "{customerid}", "page", "{page}").Methods(http.MethodGet)
 	return router
 }

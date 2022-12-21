@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 	"time"
 )
@@ -15,6 +16,7 @@ var (
 	ctx               = context.Background()
 	db                = mysql_connection.InitMysqlDB()
 	repoCouponsPrefix = repository.NewCouponPrefixImpl(db)
+	repoCoupons       = repository.NewCouponsRepoImpl(db)
 )
 
 func TestInsertCouponsPrefix(t *testing.T) {
@@ -64,4 +66,19 @@ func TestUpdateCounponsPrefix(t *testing.T) {
 func TestDeleteCouponsPrefix(t *testing.T) {
 	err := repoCouponsPrefix.DeletePrefix(ctx, 1)
 	assert.NoError(t, err)
+}
+
+func TestFindCouponPrefix(t *testing.T) {
+	prefix, err := repoCouponsPrefix.FindCouponPrefix(ctx, "ulti", "computer")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, prefix)
+	assert.Equal(t, "ulti", prefix.PrefixName())
+	fmt.Println(prefix)
+}
+
+func TestGetCoupons(t *testing.T) {
+	result, err := repoCoupons.FindCouponByCustomerIdAndCode(ctx, "ULTI-pbFut594daUVgOZr", "bie7")
+	assert.NoError(t, err)
+	str := strings.Split(result.CouponCode(), "-")[0]
+	fmt.Println(str)
 }

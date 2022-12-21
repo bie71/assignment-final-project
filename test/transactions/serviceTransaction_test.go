@@ -6,43 +6,64 @@ import (
 	usecase "assigment-final-project/internal/usecase/transactions"
 	"fmt"
 	"github.com/go-playground/validator/v10"
-	"log"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 var (
 	repoItem           = repoItems.NewTransactionItemsRepoImpl(db)
-	repoCutomer        = repoItems.NewCustomerRepoImpl(db)
 	initialCoupons     = repoItems.NewCouponPrefixImpl(db)
 	coupons            = repoItems.NewCouponsRepoImpl(db)
-	categoryRepo       = repoItems.NewCategoryRepoImpl(db)
-	productRepo        = repoItems.NewProductsRepoImpl(db)
-	transactionService = usecase.NewTransactionServiceImpl(repoTransaction, repoCutomer, repoItem,
-		coupons, initialCoupons, productRepo, categoryRepo, validation)
-	validation = validator.New()
+	transactionService = usecase.NewTransactionServiceImpl(repoTransaction, repoItem, coupons, initialCoupons, validation)
+	validation         = validator.New()
 )
 
 func TestInserTransactionService(t *testing.T) {
-	item := []*http_request.TransactionItemsRequest{
-		{
-			ProductId: "p2",
-			Quantity:  4,
+	data := &http_request.TransactionRequest{
+		CustomerId: "bie7",
+		CouponCode: "BASIC-Cv0HXrTzFmOug4y0",
+		PurchaseItems: []*http_request.TransactionItemsRequest{
+			{
+				ProductId: "p4",
+				Quantity:  1,
+			},
+			{
+				ProductId: "p1",
+				Quantity:  1,
+			},
+			{
+				ProductId: "p2",
+				Quantity:  1,
+			},
 		},
 	}
 
-	data := &http_request.TransactionRequest{
-		CustomerId:    "bie7",
-		CouponCode:    "",
-		PurchaseItems: item,
-	}
-
 	result, err := transactionService.AddTransaction(ctx, data)
-	log.Println("error", err)
+	assert.NoError(t, err)
 	fmt.Println(result)
 }
 
 func TestGetTransaction(t *testing.T) {
-	transaction, err := transactionService.GetTransaction(ctx)
-	fmt.Println(err)
+	transactions, err := transactionService.GetTransaction(ctx, 2)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, transactions)
+	for i, transaction := range transactions {
+		fmt.Println(i, "=>", transaction)
+		for _, item := range transaction.PurchaseItems {
+			fmt.Println(item)
+		}
+	}
+}
+
+func TestFindTransaction(t *testing.T) {
+	transaction, err := transactionService.FindTransaction(ctx, "transaction-EUOM1lKXBcyQWSFy")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, transaction)
 	fmt.Println(transaction)
+}
+
+func TestDeleteTransaction(t *testing.T) {
+	transaction, err := transactionService.DeleteTransaction(ctx, "transaction-EUOM1lKXBcyQWSFy")
+	assert.NoError(t, err)
+	assert.Equal(t, "Success Delete Transaction", transaction)
 }

@@ -12,10 +12,11 @@ import (
 
 type CouponHandlerImpl struct {
 	serviceCoupons usecase.CouponsPrefixService
+	coupons        usecase.CouponsService
 }
 
-func NewCouponHandlerImpl(serviceCoupons usecase.CouponsPrefixService) *CouponHandlerImpl {
-	return &CouponHandlerImpl{serviceCoupons: serviceCoupons}
+func NewCouponHandlerImpl(serviceCoupons usecase.CouponsPrefixService, coupons usecase.CouponsService) *CouponHandlerImpl {
+	return &CouponHandlerImpl{serviceCoupons: serviceCoupons, coupons: coupons}
 }
 
 func (c *CouponHandlerImpl) AddCoupon(w http.ResponseWriter, r *http.Request) {
@@ -74,6 +75,21 @@ func (c *CouponHandlerImpl) UpdateAndDeleteCoupon(w http.ResponseWriter, r *http
 
 	result, err := c.serviceCoupons.DeleteCoupon(r.Context(), query)
 	if err != nil {
+		delivery.ResponseDelivery(w, http.StatusNotFound, nil, err.Error())
+		return
+	}
+	delivery.ResponseDelivery(w, http.StatusOK, result, nil)
+}
+
+func (c *CouponHandlerImpl) GetCouponsCustomer(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("customerid")
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
+		return
+	}
+	result, err := c.coupons.GetCouponByCustomerId(r.Context(), query, page)
+	if result == nil && err != nil {
 		delivery.ResponseDelivery(w, http.StatusNotFound, nil, err.Error())
 		return
 	}

@@ -10,5 +10,6 @@ type CouponsPrefix interface {
 	InsertPrefixs(ctx context.Context, prefixs []*entity.CouponsPrefix) error
 	GetPrefixs(ctx context.Context) ([]*entity.CouponsPrefix, error)
 	UpdatePrefix(ctx context.Context, prefix *entity.CouponsPrefix) (*entity.CouponsPrefix, error)
+	FindCouponPrefix(ctx context.Context, prefix, criteria string) (*entity.CouponsPrefix, error)
 	DeletePrefix(ctx context.Context, id int) error
 }

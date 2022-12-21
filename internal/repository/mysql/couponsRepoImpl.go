@@ -36,8 +36,7 @@ func (c *CouponsRepoImpl) FindCouponByCustomerIdAndCode(ctx context.Context, cod
 	result, err := dbq.Q(ctx, c.db, stmt, opts, code, customerId)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ModelCouponsToDomainCoupons(result.(*models.CouponsModel))
-		return data, nil
+		return mapper.ModelCouponsToDomainCoupons(result.(*models.CouponsModel)), nil
 	}
 	return nil, errors.New("data not found")
 }
@@ -61,58 +60,55 @@ func (c *CouponsRepoImpl) InsertCoupon(ctx context.Context, coupons *entity.Coup
 	return errTx
 }
 
-func (c *CouponsRepoImpl) FindCoupon(ctx context.Context, code string, id int) (*entity.Coupons, error) {
+func (c *CouponsRepoImpl) FindCoupon(ctx context.Context, code string) (*entity.Coupons, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	stmt := fmt.Sprintf("SELECT * FROM %s WHERE id = ? OR coupon_code = ?", models.TableNameCoupons())
+	stmt := fmt.Sprintf("SELECT * FROM %s WHERE coupon_code = ?", models.TableNameCoupons())
 	opts := &dbq.Options{
 		SingleResult:   true,
 		ConcreteStruct: models.CouponsModel{},
 		DecoderConfig:  dbq.StdTimeConversionConfig(),
 	}
 
-	result, err := dbq.Q(ctx, c.db, stmt, opts, id, code)
+	result, err := dbq.Q(ctx, c.db, stmt, opts, code)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ModelCouponsToDomainCoupons(result.(*models.CouponsModel))
-		return data, nil
+		return mapper.ModelCouponsToDomainCoupons(result.(*models.CouponsModel)), nil
 	}
 	return nil, errors.New("data not found")
 }
 
-func (c *CouponsRepoImpl) GetCoupons(ctx context.Context) ([]*entity.Coupons, error) {
+func (c *CouponsRepoImpl) GetCoupons(ctx context.Context, offsetNum, limitNum int) ([]*entity.Coupons, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	stmt := fmt.Sprintf("SELECT * FROM %s ", models.TableNameCoupons())
+	stmt := fmt.Sprintf("SELECT * FROM %s GROUP BY id LIMIT ?,?", models.TableNameCoupons())
 	opts := &dbq.Options{
 		SingleResult:   false,
 		ConcreteStruct: models.CouponsModel{},
 		DecoderConfig:  dbq.StdTimeConversionConfig(),
 	}
 
-	result, err := dbq.Q(ctx, c.db, stmt, opts)
+	result, err := dbq.Q(ctx, c.db, stmt, opts, offsetNum, limitNum)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ListModelToListDomainCoupons(result.([]*models.CouponsModel))
-		return data, nil
+		return mapper.ListModelToListDomainCoupons(result.([]*models.CouponsModel)), nil
 	}
 	return nil, errors.New("data empty")
 }
 
-func (c *CouponsRepoImpl) DeleteCoupon(ctx context.Context, code string, id int) error {
+func (c *CouponsRepoImpl) DeleteCoupon(ctx context.Context, code string) error {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	errTx := dbq.Tx(ctx, c.db, func(tx interface{}, Q dbq.QFn, E dbq.EFn, txCommit dbq.TxCommit) {
-		stmt := fmt.Sprintf(`DELETE FROM %s WHERE id = ? OR coupon_code = ?`, models.TableNameCoupons())
-		result, err := E(ctx, stmt, nil, id, code)
+		stmt := fmt.Sprintf(`DELETE FROM %s WHERE coupon_code = ?`, models.TableNameCoupons())
+		result, err := E(ctx, stmt, nil, code)
 		if err != nil {
 			helper.PanicIfError(err)
 			return
 		}
-
 		errCommit := txCommit()
 		helper.PanicIfError(errCommit)
 
@@ -123,7 +119,6 @@ func (c *CouponsRepoImpl) DeleteCoupon(ctx context.Context, code string, id int)
 		} else {
 			log.Println("Success Delete ", affected)
 		}
-
 	})
 	return errTx
 }
@@ -139,7 +134,6 @@ func (c *CouponsRepoImpl) UpdateStatusCoupon(ctx context.Context, code, customer
 			helper.PanicIfError(err)
 			return
 		}
-
 		errCommit := txCommit()
 		helper.PanicIfError(errCommit)
 
@@ -150,10 +144,28 @@ func (c *CouponsRepoImpl) UpdateStatusCoupon(ctx context.Context, code, customer
 		} else {
 			log.Println("Success Update ", affected)
 		}
-
 	})
 	if errTx != nil {
 		return false, errTx
 	}
 	return true, nil
+}
+
+func (c *CouponsRepoImpl) FindCouponByCustomerId(ctx context.Context, customerId string, offsetNum, limitNum int) ([]*entity.Coupons, error) {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	stmt := fmt.Sprintf("SELECT * FROM %s WHERE customer_id = ? GROUP BY id LIMIT ?,?", models.TableNameCoupons())
+	opts := &dbq.Options{
+		SingleResult:   false,
+		ConcreteStruct: models.CouponsModel{},
+		DecoderConfig:  dbq.StdTimeConversionConfig(),
+	}
+
+	result, err := dbq.Q(ctx, c.db, stmt, opts, customerId, offsetNum, limitNum)
+	helper.PanicIfError(err)
+	if result != nil {
+		return mapper.ListModelToListDomainCoupons(result.([]*models.CouponsModel)), nil
+	}
+	return nil, errors.New("data not found")
 }

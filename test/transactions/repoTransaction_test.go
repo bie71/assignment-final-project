@@ -43,3 +43,11 @@ func TestGetItemsProduct(t *testing.T) {
 		assert.NotEmpty(t, itemsProduct)
 	}
 }
+
+func TestGetTransactionCustomer(t *testing.T) {
+	customers, err := repoTransaction.GetTransactionCustomers(ctx, "transaction-xQPDmpLPLBIQqXs1")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, customers)
+	assert.Equal(t, "bie7", customers.CustomerId)
+	fmt.Println(customers)
+}

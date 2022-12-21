@@ -55,8 +55,7 @@ func (c *CouponPrefixImpl) GetPrefixs(ctx context.Context) ([]*entity.CouponsPre
 	result, err := dbq.Q(ctx, c.db, stmt, opts)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ListModelToListDomainCouponsPrefix(result.([]*models.CouponsPrefixModel))
-		return data, nil
+		return mapper.ListModelToListDomainCouponsPrefix(result.([]*models.CouponsPrefixModel)), nil
 	}
 	return nil, errors.New("data empty")
 }
@@ -72,7 +71,6 @@ func (c *CouponPrefixImpl) UpdatePrefix(ctx context.Context, prefix *entity.Coup
 			helper.PanicIfError(err)
 			return
 		}
-
 		errCommit := txCommit()
 		helper.PanicIfError(errCommit)
 
@@ -83,7 +81,6 @@ func (c *CouponPrefixImpl) UpdatePrefix(ctx context.Context, prefix *entity.Coup
 		} else {
 			log.Println("Success Update ", affected)
 		}
-
 	})
 	return prefix, errTx
 }
@@ -110,7 +107,6 @@ func (c *CouponPrefixImpl) DeletePrefix(ctx context.Context, id int) error {
 		} else {
 			log.Println("Success Delete", affected)
 		}
-
 	})
 	return errTx
 }
@@ -132,4 +128,22 @@ func (c *CouponPrefixImpl) InsertPrefixs(ctx context.Context, prefixs []*entity.
 		log.Println("Succes Insert : ", row)
 	})
 	return errTx
+}
+
+func (c *CouponPrefixImpl) FindCouponPrefix(ctx context.Context, prefix, criteria string) (*entity.CouponsPrefix, error) {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	stmt := fmt.Sprintf("SELECT * FROM %s WHERE prefix_name = ? AND criteria = ? GROUP BY id", models.TableNameCouponsPrefix())
+	opts := &dbq.Options{
+		SingleResult:   true,
+		ConcreteStruct: models.CouponsPrefixModel{},
+		DecoderConfig:  dbq.StdTimeConversionConfig(),
+	}
+	result, err := dbq.Q(ctx, c.db, stmt, opts, prefix, criteria)
+	helper.PanicIfError(err)
+	if result != nil {
+		return mapper.ModelToDomainCounponsPrefix(result.(*models.CouponsPrefixModel)), nil
+	}
+	return nil, errors.New("data not found")
 }

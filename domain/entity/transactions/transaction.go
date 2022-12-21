@@ -22,6 +22,14 @@ type DTOTransaction struct {
 	PurchaseDate       time.Time
 }
 
+type TransactionCustomer struct {
+	TransactionId string
+	CustomerId    string
+	Name          string
+	Contact       string
+	CreatedAt     time.Time
+}
+
 func NewTransaction(DTO *DTOTransaction) *Transaction {
 	return &Transaction{
 		transactionId:      DTO.TransactionId,

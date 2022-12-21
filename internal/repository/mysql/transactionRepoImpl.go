@@ -56,28 +56,26 @@ func (t *TransactionRepoImpl) FindTransaction(ctx context.Context, transactionId
 	result, err := dbq.Q(ctx, t.db, stmt, opts, transactionId)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ModelToDomainTransaction(result.(*models.TransactionModel))
-		return data, nil
+		return mapper.ModelToDomainTransaction(result.(*models.TransactionModel)), nil
 	}
 	return nil, errors.New("data not found")
 }
 
-func (t *TransactionRepoImpl) GetTransactions(ctx context.Context) ([]*entity.Transaction, error) {
+func (t *TransactionRepoImpl) GetTransactions(ctx context.Context, offsetNum, limitNum int) ([]*entity.Transaction, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	stmt := fmt.Sprintf(`SELECT * FROM %s`, models.TabelNameTransaction())
+	stmt := fmt.Sprintf(`SELECT * FROM %s order by purchase_date DESC LIMIT ?, ?`, models.TabelNameTransaction())
 	opts := &dbq.Options{
 		SingleResult:   false,
 		ConcreteStruct: models.TransactionModel{},
 		DecoderConfig:  dbq.StdTimeConversionConfig(),
 	}
 
-	result, err := dbq.Q(ctx, t.db, stmt, opts)
+	result, err := dbq.Q(ctx, t.db, stmt, opts, offsetNum, limitNum)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ListModelToListDomainTransaction(result.([]*models.TransactionModel))
-		return data, nil
+		return mapper.ListModelToListDomainTransaction(result.([]*models.TransactionModel)), nil
 	}
 	return nil, errors.New("data not found")
 }
@@ -93,10 +91,8 @@ func (t *TransactionRepoImpl) DeleteTransaction(ctx context.Context, transaction
 			helper.PanicIfError(err)
 			return
 		}
-
 		errCommit := txCommit()
 		helper.PanicIfError(errCommit)
-
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
@@ -104,7 +100,6 @@ func (t *TransactionRepoImpl) DeleteTransaction(ctx context.Context, transaction
 		} else {
 			log.Println("Success Delete", affected)
 		}
-
 	})
 	return errTx
 }
@@ -124,8 +119,7 @@ func (t *TransactionRepoImpl) GetProductJoinCategory(ctx context.Context, produc
 	result, err := dbq.Q(ctx, t.db, stmt, opts, productId)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ModelToProductCategoryModel(result.(*models.ProductCategoryModel))
-		return data, nil
+		return mapper.ModelToProductCategoryModel(result.(*models.ProductCategoryModel)), nil
 	}
 	return nil, errors.New("data not found")
 }
@@ -147,6 +141,27 @@ func (t *TransactionRepoImpl) GetItemsProduct(ctx context.Context, transactionId
 	helper.PanicIfError(err)
 	if result != nil {
 		return mapper.ListItemsProductToListItemsProductDomain(result.([]*models.ItemsProductModel)), nil
+	}
+	return nil, errors.New("data not found")
+}
+
+func (t *TransactionRepoImpl) GetTransactionCustomers(ctx context.Context, transactionId string) (*entity.TransactionCustomer, error) {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	stmt := fmt.Sprintf(`SELECT t.transaction_id, c.customer_id, c.name, c.contact, c.created_at FROM %s t
+    INNER JOIN %s c ON t.customer_id = c.customer_id WHERE t.transaction_id = ? GROUP BY t.transaction_id `,
+		models.TabelNameTransaction(), models.TableNameCustomer())
+	opts := &dbq.Options{
+		SingleResult:   true,
+		ConcreteStruct: models.TransactionCustomer{},
+		DecoderConfig:  dbq.StdTimeConversionConfig(),
+	}
+
+	result, err := dbq.Q(ctx, t.db, stmt, opts, transactionId)
+	helper.PanicIfError(err)
+	if result != nil {
+		return mapper.ModelToDomainTransactionCustomer(result.(*models.TransactionCustomer)), nil
 	}
 	return nil, errors.New("data not found")
 }

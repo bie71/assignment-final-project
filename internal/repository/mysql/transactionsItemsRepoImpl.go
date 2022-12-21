@@ -55,8 +55,7 @@ func (t *TransactionItemsRepoImpl) GetItems(ctx context.Context) ([]*entity.Tran
 	result, err := dbq.Q(ctx, t.db, stmt, opts)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ListModelItemsToListDomainTransactionItems(result.([]*models.TransactionItemsModel))
-		return data, nil
+		return mapper.ListModelItemsToListDomainTransactionItems(result.([]*models.TransactionItemsModel)), nil
 	}
 	return nil, errors.New("data not found")
 }
@@ -83,7 +82,6 @@ func (t *TransactionItemsRepoImpl) DeleteTransactionItems(ctx context.Context, i
 		} else {
 			log.Println("Success Delete", affected)
 		}
-
 	})
 	return errTx
 }
