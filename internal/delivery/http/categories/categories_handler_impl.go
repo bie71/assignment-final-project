@@ -6,6 +6,7 @@ import (
 	"assigment-final-project/internal/delivery"
 	"assigment-final-project/internal/delivery/http_request"
 	"net/http"
+	"strconv"
 )
 
 type CategoryHandlerImpl struct {
@@ -50,6 +51,12 @@ func (c *CategoryHandlerImpl) CreateCategory(w http.ResponseWriter, r *http.Requ
 
 func (c *CategoryHandlerImpl) FindAndDeleteCategory(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("id")
+	page := r.URL.Query().Get("page")
+	if page == "" {
+		page = "1"
+	}
+	p, err := strconv.Atoi(page)
+	helper.PanicIfError(err)
 
 	if r.Method == http.MethodDelete {
 		data, err := c.categoryService.DeleteCategoryById(r.Context(), query)
@@ -62,7 +69,7 @@ func (c *CategoryHandlerImpl) FindAndDeleteCategory(w http.ResponseWriter, r *ht
 	}
 
 	if query == "" {
-		data, err := c.categoryService.GetCategories(r.Context())
+		data, err := c.categoryService.GetCategories(r.Context(), p)
 		if err != nil {
 			delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 			return
@@ -80,7 +87,13 @@ func (c *CategoryHandlerImpl) FindAndDeleteCategory(w http.ResponseWriter, r *ht
 }
 
 func (c *CategoryHandlerImpl) GetCategories(w http.ResponseWriter, r *http.Request) {
-	data, err := c.categoryService.GetCategories(r.Context())
+	page := r.URL.Query().Get("page")
+	if page == "" {
+		page = "1"
+	}
+	p, err := strconv.Atoi(page)
+	helper.PanicIfError(err)
+	data, err := c.categoryService.GetCategories(r.Context(), p)
 	if err != nil {
 		delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 		return

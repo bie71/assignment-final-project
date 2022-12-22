@@ -6,6 +6,7 @@ import (
 	"assigment-final-project/internal/delivery"
 	"assigment-final-project/internal/delivery/http_request"
 	"net/http"
+	"strconv"
 )
 
 type CustomerHandlerImpl struct {
@@ -30,6 +31,12 @@ func (c *CustomerHandlerImpl) AddCustomer(w http.ResponseWriter, r *http.Request
 
 func (c *CustomerHandlerImpl) GetAndDeleteCustomer(w http.ResponseWriter, r *http.Request) {
 	customerId := r.URL.Query().Get("id")
+	page := r.URL.Query().Get("page")
+	if page == "" {
+		page = "1"
+	}
+	p, err := strconv.Atoi(page)
+	helper.PanicIfError(err)
 
 	if r.Method == http.MethodDelete {
 		data, err := c.customerService.DeleteCustomer(r.Context(), customerId, customerId)
@@ -42,7 +49,7 @@ func (c *CustomerHandlerImpl) GetAndDeleteCustomer(w http.ResponseWriter, r *htt
 	}
 
 	if customerId == "" {
-		data, err := c.customerService.GetCustomers(r.Context())
+		data, err := c.customerService.GetCustomers(r.Context(), p)
 		if err != nil {
 			delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 			return

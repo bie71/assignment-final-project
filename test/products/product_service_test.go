@@ -28,7 +28,7 @@ func TestAddProduct(t *testing.T) {
 }
 
 func TestGetProductsService(t *testing.T) {
-	products, err := serviceProduct.GetProducts(ctx)
+	products, err := serviceProduct.GetProducts(ctx, 1)
 	if err != nil {
 		fmt.Errorf("error in service %s", err)
 	}

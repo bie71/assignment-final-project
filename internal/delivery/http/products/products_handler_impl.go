@@ -7,6 +7,7 @@ import (
 	"assigment-final-project/internal/delivery/http_request"
 	"github.com/go-playground/validator/v10"
 	"net/http"
+	"strconv"
 )
 
 type ProductsHandlerImpl struct {
@@ -38,9 +39,15 @@ func (p *ProductsHandlerImpl) AddProduct(w http.ResponseWriter, r *http.Request)
 
 func (p *ProductsHandlerImpl) GetsFindAndDeleteProduct(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("id")
+	page := r.URL.Query().Get("page")
+	if page == "" {
+		page = "1"
+	}
+	pg, err := strconv.Atoi(page)
+	helper.PanicIfError(err)
 
 	if query == "" {
-		products, err := p.serviceProducts.GetProducts(r.Context())
+		products, err := p.serviceProducts.GetProducts(r.Context(), pg)
 		if err != nil {
 			delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 			return
@@ -87,7 +94,13 @@ func (p *ProductsHandlerImpl) UpdateProduct(w http.ResponseWriter, r *http.Reque
 }
 
 func (p *ProductsHandlerImpl) GetProducts(w http.ResponseWriter, r *http.Request) {
-	result, err := p.serviceProducts.GetProducts(r.Context())
+	page := r.URL.Query().Get("page")
+	if page == "" {
+		page = "1"
+	}
+	pg, err := strconv.Atoi(page)
+	helper.PanicIfError(err)
+	result, err := p.serviceProducts.GetProducts(r.Context(), pg)
 	if err != nil {
 		delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 		return

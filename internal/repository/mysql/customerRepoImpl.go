@@ -55,28 +55,26 @@ func (c *CustomerRepoImpl) FindCustomerById(ctx context.Context, customerId, pho
 	result, err := dbq.Q(ctx, c.db, stmt, opts, customerId, phone)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ModelsToDomainCustomers(result.(*models.CustomerModels))
-		return data, nil
+		return mapper.ModelsToDomainCustomers(result.(*models.CustomerModels)), nil
 	}
 	return nil, errors.New("data not found")
 }
 
-func (c *CustomerRepoImpl) GetCustomers(ctx context.Context) ([]*entity.Customers, error) {
+func (c *CustomerRepoImpl) GetCustomers(ctx context.Context, offsetNum, limitNum int) ([]*entity.Customers, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	stmt := fmt.Sprintf("SELECT * FROM %s ", models.TableNameCustomer())
+	stmt := fmt.Sprintf("SELECT * FROM %s GROUP BY customer_id LIMIT ?, ?", models.TableNameCustomer())
 	opts := &dbq.Options{
 		SingleResult:   false,
 		ConcreteStruct: models.CustomerModels{},
 		DecoderConfig:  dbq.StdTimeConversionConfig(),
 	}
 
-	result, err := dbq.Q(ctx, c.db, stmt, opts)
+	result, err := dbq.Q(ctx, c.db, stmt, opts, offsetNum, limitNum)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ListModelToDomainListCustomer(result.([]*models.CustomerModels))
-		return data, nil
+		return mapper.ListModelToDomainListCustomer(result.([]*models.CustomerModels)), nil
 	}
 	return nil, errors.New("data empty")
 }
@@ -92,10 +90,8 @@ func (c *CustomerRepoImpl) DeleteCustomerById(ctx context.Context, customerId, p
 			helper.PanicIfError(err)
 			return
 		}
-
 		errCommit := txCommit()
 		helper.PanicIfError(errCommit)
-
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {

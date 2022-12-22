@@ -111,7 +111,6 @@ func (c *CouponsRepoImpl) DeleteCoupon(ctx context.Context, code string) error {
 		}
 		errCommit := txCommit()
 		helper.PanicIfError(errCommit)
-
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
@@ -136,7 +135,6 @@ func (c *CouponsRepoImpl) UpdateStatusCoupon(ctx context.Context, code, customer
 		}
 		errCommit := txCommit()
 		helper.PanicIfError(errCommit)
-
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
@@ -161,7 +159,6 @@ func (c *CouponsRepoImpl) FindCouponByCustomerId(ctx context.Context, customerId
 		ConcreteStruct: models.CouponsModel{},
 		DecoderConfig:  dbq.StdTimeConversionConfig(),
 	}
-
 	result, err := dbq.Q(ctx, c.db, stmt, opts, customerId, offsetNum, limitNum)
 	helper.PanicIfError(err)
 	if result != nil {

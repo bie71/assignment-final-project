@@ -41,18 +41,18 @@ func (c *CouponPrefixImpl) InsertPrefix(ctx context.Context, prefix *entity.Coup
 	return errTx
 }
 
-func (c *CouponPrefixImpl) GetPrefixs(ctx context.Context) ([]*entity.CouponsPrefix, error) {
+func (c *CouponPrefixImpl) GetPrefixs(ctx context.Context, offsetNum, limitNum int) ([]*entity.CouponsPrefix, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	stmt := fmt.Sprintf("SELECT * FROM %s ", models.TableNameCouponsPrefix())
+	stmt := fmt.Sprintf("SELECT * FROM %s GROUP BY id LIMIT ?,?", models.TableNameCouponsPrefix())
 	opts := &dbq.Options{
 		SingleResult:   false,
 		ConcreteStruct: models.CouponsPrefixModel{},
 		DecoderConfig:  dbq.StdTimeConversionConfig(),
 	}
 
-	result, err := dbq.Q(ctx, c.db, stmt, opts)
+	result, err := dbq.Q(ctx, c.db, stmt, opts, offsetNum, limitNum)
 	helper.PanicIfError(err)
 	if result != nil {
 		return mapper.ListModelToListDomainCouponsPrefix(result.([]*models.CouponsPrefixModel)), nil
@@ -73,7 +73,6 @@ func (c *CouponPrefixImpl) UpdatePrefix(ctx context.Context, prefix *entity.Coup
 		}
 		errCommit := txCommit()
 		helper.PanicIfError(errCommit)
-
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
@@ -99,7 +98,6 @@ func (c *CouponPrefixImpl) DeletePrefix(ctx context.Context, id int) error {
 
 		errCommit := txCommit()
 		helper.PanicIfError(errCommit)
-
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
@@ -134,7 +132,8 @@ func (c *CouponPrefixImpl) FindCouponPrefix(ctx context.Context, prefix, criteri
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	stmt := fmt.Sprintf("SELECT * FROM %s WHERE prefix_name = ? AND criteria = ? GROUP BY id", models.TableNameCouponsPrefix())
+	stmt := fmt.Sprintf("SELECT ic.id, ic.prefix_name, ic.minimum_price, ic.discount, ic.expire_date, ic.created_at , c.name AS criteria"+
+		" FROM %s ic INNER JOIN %s c ON ic.criteria = c.category_id WHERE ic.prefix_name = ? AND c.name = ? GROUP BY id", models.TableNameCouponsPrefix(), models.TableNameCategories())
 	opts := &dbq.Options{
 		SingleResult:   true,
 		ConcreteStruct: models.CouponsPrefixModel{},
@@ -144,6 +143,24 @@ func (c *CouponPrefixImpl) FindCouponPrefix(ctx context.Context, prefix, criteri
 	helper.PanicIfError(err)
 	if result != nil {
 		return mapper.ModelToDomainCounponsPrefix(result.(*models.CouponsPrefixModel)), nil
+	}
+	return nil, errors.New("data not found")
+}
+
+func (c *CouponPrefixImpl) GetPrefixMinimumPrice(ctx context.Context, price float64) ([]*entity.CouponsPrefix, error) {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	stmt := fmt.Sprintf("SELECT * FROM %s WHERE minimum_price <= ? GROUP BY id", models.TableNameCouponsPrefix())
+	opts := &dbq.Options{
+		SingleResult:   false,
+		ConcreteStruct: models.CouponsPrefixModel{},
+		DecoderConfig:  dbq.StdTimeConversionConfig(),
+	}
+	result, err := dbq.Q(ctx, c.db, stmt, opts, price)
+	helper.PanicIfError(err)
+	if result != nil {
+		return mapper.ListModelToListDomainCouponsPrefix(result.([]*models.CouponsPrefixModel)), nil
 	}
 	return nil, errors.New("data not found")
 }

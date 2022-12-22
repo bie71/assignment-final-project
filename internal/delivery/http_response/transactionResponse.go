@@ -8,13 +8,13 @@ type TransactionResult struct {
 }
 
 type TransactionResponse struct {
-	TransactionId           string                      `json:"transaction_id,omitempty"`
-	Customer                *CustomerResponse           `json:"customer,omitempty"`
-	CouponCode              string                      `json:"coupon_code,omitempty"`
+	TransactionId           string                      `json:"transaction_id"`
+	Customer                *CustomerResponse           `json:"customer"`
+	CouponCode              string                      `json:"coupon_code"`
 	PurchaseItems           []*TransactionItemsResponse `json:"purchase_items"`
-	TotalPrice              float64                     `json:"total_price,omitempty"`
-	Discount                float32                     `json:"discount,omitempty"`
-	TotalPriceAfterDiscount float64                     `json:"total_price_after_discount,omitempty"`
+	TotalPrice              float64                     `json:"total_price"`
+	Discount                float32                     `json:"discount"`
+	TotalPriceAfterDiscount float64                     `json:"total_price_after_discount"`
 	PurchaseDate            time.Time                   `json:"purchase_date"`
 }
 

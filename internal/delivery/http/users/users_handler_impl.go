@@ -77,7 +77,13 @@ func (u *UserHandlerImpl) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *UserHandlerImpl) GetUsers(w http.ResponseWriter, r *http.Request) {
-	result, err := u.UsersService.GetUsers(r.Context())
+	page := r.URL.Query().Get("page")
+	if page == "" {
+		page = "1"
+	}
+	p, err := strconv.Atoi(page)
+	helper.PanicIfError(err)
+	result, err := u.UsersService.GetUsers(r.Context(), p)
 	if err != nil {
 		delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 		return

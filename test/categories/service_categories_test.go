@@ -37,7 +37,7 @@ func TestInsertCategories(t *testing.T) {
 }
 
 func TestGetCategoriesService(t *testing.T) {
-	categories, err := serviceCategories.GetCategories(ctx)
+	categories, err := serviceCategories.GetCategories(ctx, 1)
 	if err != nil {
 		fmt.Println(err)
 	}

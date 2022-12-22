@@ -1,15 +1,14 @@
 package usecase
 
 import (
-	entity "assigment-final-project/domain/entity/customers"
 	repository "assigment-final-project/domain/repository/customers"
 	"assigment-final-project/helper"
+	"assigment-final-project/helper/requestToEntity"
 	"assigment-final-project/internal/delivery/http_request"
 	"assigment-final-project/internal/delivery/http_response"
 	"context"
 	"errors"
 	"github.com/go-playground/validator/v10"
-	"time"
 )
 
 type CustomerServiceImpl struct {
@@ -26,20 +25,12 @@ func (c *CustomerServiceImpl) AddCustomer(ctx context.Context, customerRequest *
 	if errValidation != nil {
 		return "", errValidation
 	}
-	time, err := time.Parse(time.RFC1123Z, time.Now().Format(time.RFC1123Z))
-	helper.PanicIfError(err)
-	dataCutomer, _ := entity.NewCustomer(&entity.DTOCustomers{
-		CustomerId: `customer-` + helper.RandomString(16),
-		Name:       customerRequest.Name,
-		Contact:    customerRequest.Phone,
-		CreatedAt:  time,
-	})
-
+	dataCutomer := requestToEntity.CustomerRequestToEntity(customerRequest, `customer-`+helper.RandomString(16))
 	customer, _ := c.customerRepo.FindCustomerById(ctx, dataCutomer.CustomerId(), dataCutomer.Contact())
 	if customer != nil {
 		return "", errors.New("customer already registered")
 	}
-	err = c.customerRepo.InsertCustomer(ctx, dataCutomer)
+	err := c.customerRepo.InsertCustomer(ctx, dataCutomer)
 	helper.PanicIfError(err)
 	return dataCutomer.CustomerId(), nil
 
@@ -51,15 +42,19 @@ func (c *CustomerServiceImpl) FindCustomer(ctx context.Context, customerId, phon
 	}
 
 	dataCustomer, err := c.customerRepo.FindCustomerById(ctx, customerId, phone)
-	if err != nil {
-		return nil, err
+	if err != nil || dataCustomer == nil {
+		return nil, errors.New("customer not found")
 	}
 	return http_response.DomainToCustomerResponse(dataCustomer), nil
 
 }
 
-func (c *CustomerServiceImpl) GetCustomers(ctx context.Context) ([]*http_response.CustomerResponse, error) {
-	customers, err := c.customerRepo.GetCustomers(ctx)
+func (c *CustomerServiceImpl) GetCustomers(ctx context.Context, page int) ([]*http_response.CustomerResponse, error) {
+	var (
+		limit  = 5
+		offset = limit * (page - 1)
+	)
+	customers, err := c.customerRepo.GetCustomers(ctx, offset, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -70,11 +65,12 @@ func (c *CustomerServiceImpl) DeleteCustomer(ctx context.Context, customerId, ph
 	if customerId == "" && phone == "" {
 		return "", errors.New("customerid or phone must be set")
 	}
-	_, err := c.customerRepo.FindCustomerById(ctx, customerId, phone)
-	err = c.customerRepo.DeleteCustomerById(ctx, customerId, phone)
-	if err != nil {
-		return "", err
+	result, err := c.customerRepo.FindCustomerById(ctx, customerId, phone)
+	if err != nil || result == nil {
+		return "", errors.New("customer not found")
 	}
+	err = c.customerRepo.DeleteCustomerById(ctx, customerId, phone)
+	helper.PanicIfError(err)
 
 	return "Success Delete Customer", nil
 }

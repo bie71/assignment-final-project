@@ -51,3 +51,14 @@ func TestGetTransactionCustomer(t *testing.T) {
 	assert.Equal(t, "bie7", customers.CustomerId)
 	fmt.Println(customers)
 }
+
+func TestDeleteTransactions(t *testing.T) {
+	err := repoTransaction.DeleteTransaction(ctx, "transaction-xQPDmpLPLBIQqXs1")
+	assert.NoError(t, err)
+}
+
+func TestFindTransactions(t *testing.T) {
+	result, err := repoTransaction.FindTransaction(ctx, "transaction-vE6iHV0cpUJKL30H")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, result)
+}

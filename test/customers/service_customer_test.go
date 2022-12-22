@@ -35,7 +35,7 @@ func TestDeleteCustomer(t *testing.T) {
 }
 
 func TestGetCustomersService(t *testing.T) {
-	customers, err := serviceCustomer.GetCustomers(ctx)
+	customers, err := serviceCustomer.GetCustomers(ctx, 1)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, customers)
 }

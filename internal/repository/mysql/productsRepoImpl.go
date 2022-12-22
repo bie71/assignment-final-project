@@ -55,28 +55,26 @@ func (p *ProductsRepoImpl) FindProduct(ctx context.Context, productId string) (*
 	result, err := dbq.Q(ctx, p.db, stmt, opts, productId)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ProductsModelToDomainProducts(result.(*models.ProductsModel))
-		return data, nil
+		return mapper.ProductsModelToDomainProducts(result.(*models.ProductsModel)), nil
 	}
 	return nil, errors.New("data not found")
 }
 
-func (p *ProductsRepoImpl) GetProducts(ctx context.Context) ([]*entity.Products, error) {
+func (p *ProductsRepoImpl) GetProducts(ctx context.Context, offsetNum, limitNum int) ([]*entity.Products, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	stmt := fmt.Sprintf("SELECT * FROM %s ", models.TableNameProducts())
+	stmt := fmt.Sprintf("SELECT * FROM %s GROUP BY product_id LIMIT ?,?", models.TableNameProducts())
 	opts := &dbq.Options{
 		SingleResult:   false,
 		ConcreteStruct: models.ProductsModel{},
 		DecoderConfig:  dbq.StdTimeConversionConfig(),
 	}
 
-	result, err := dbq.Q(ctx, p.db, stmt, opts)
+	result, err := dbq.Q(ctx, p.db, stmt, opts, offsetNum, limitNum)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ListModelProductsToListDomainProducts(result.([]*models.ProductsModel))
-		return data, nil
+		return mapper.ListModelProductsToListDomainProducts(result.([]*models.ProductsModel)), nil
 	}
 	return nil, errors.New("data empty")
 }
@@ -95,7 +93,6 @@ func (p *ProductsRepoImpl) UpdateProduct(ctx context.Context, product *entity.Pr
 
 		errCommit := txCommit()
 		helper.PanicIfError(errCommit)
-
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
@@ -122,7 +119,6 @@ func (p *ProductsRepoImpl) DeleteProduct(ctx context.Context, productId string) 
 
 		errCommit := txCommit()
 		helper.PanicIfError(errCommit)
-
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {

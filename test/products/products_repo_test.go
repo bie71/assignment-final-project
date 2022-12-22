@@ -27,7 +27,7 @@ func TestInsertProduct(t *testing.T) {
 		Stock:      10,
 	})
 
-	err := repo.InsertProducts(ctx, dataProduct)
+	err := repo.InsertProduct(ctx, dataProduct)
 	if err != nil {
 		fmt.Errorf("err in repo %s", err)
 	}
@@ -47,7 +47,7 @@ func TestFindProductbyId(t *testing.T) {
 }
 
 func TestGetProducts(t *testing.T) {
-	products, err := repo.GetProducts(ctx)
+	products, err := repo.GetProducts(ctx, 0, 5)
 	if err != nil {
 		fmt.Errorf("err in repo %s", err)
 	}

@@ -6,6 +6,7 @@ import (
 	"assigment-final-project/internal/delivery"
 	"assigment-final-project/internal/delivery/http_request"
 	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
 )
@@ -39,7 +40,13 @@ func (c *CouponHandlerImpl) AddCoupon(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *CouponHandlerImpl) GetCoupons(w http.ResponseWriter, r *http.Request) {
-	result, err := c.serviceCoupons.GetCoupons(r.Context())
+	page := r.URL.Query().Get("page")
+	if page == "" {
+		page = "1"
+	}
+	p, err := strconv.Atoi(page)
+	helper.PanicIfError(err)
+	result, err := c.serviceCoupons.GetCoupons(r.Context(), p)
 	if err != nil {
 		delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 		return
@@ -49,10 +56,7 @@ func (c *CouponHandlerImpl) GetCoupons(w http.ResponseWriter, r *http.Request) {
 
 func (c *CouponHandlerImpl) UpdateAndDeleteCoupon(w http.ResponseWriter, r *http.Request) {
 	query, err := strconv.Atoi(r.URL.Query().Get("id"))
-	if err != nil {
-		delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
-		return
-	}
+	helper.PanicIfError(err)
 
 	if r.Method == http.MethodPut {
 		couponRequest := &http_request.CouponsPrefixRequest{}
@@ -82,13 +86,14 @@ func (c *CouponHandlerImpl) UpdateAndDeleteCoupon(w http.ResponseWriter, r *http
 }
 
 func (c *CouponHandlerImpl) GetCouponsCustomer(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query().Get("customerid")
-	page, err := strconv.Atoi(r.URL.Query().Get("page"))
-	if err != nil {
-		delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
-		return
+	params := mux.Vars(r)
+	page := r.URL.Query().Get("page")
+	if page == "" {
+		page = "1"
 	}
-	result, err := c.coupons.GetCouponByCustomerId(r.Context(), query, page)
+	p, err := strconv.Atoi(page)
+	helper.PanicIfError(err)
+	result, err := c.coupons.GetCouponByCustomerId(r.Context(), params["customerid"], p)
 	if result == nil && err != nil {
 		delivery.ResponseDelivery(w, http.StatusNotFound, nil, err.Error())
 		return

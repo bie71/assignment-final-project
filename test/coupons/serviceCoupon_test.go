@@ -22,7 +22,7 @@ func TestGetCouponByCustomerId(t *testing.T) {
 	result, err := serviceCoupon.GetCouponByCustomerId(ctx, "bie7", 1)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, result)
-	fmt.Println(result)
+	fmt.Println(result.Customer)
 	for _, coupon := range result.Coupons {
 		fmt.Println(coupon)
 	}

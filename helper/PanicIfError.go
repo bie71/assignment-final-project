@@ -10,7 +10,6 @@ func RecoverPanic() {
 }
 
 func PanicIfError(err error) {
-	defer RecoverPanic()
 	if err != nil {
 		panic(err)
 	}

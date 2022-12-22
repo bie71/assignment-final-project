@@ -78,6 +78,8 @@ CREATE TRIGGER update_stock_item
 alter table products add constraint fk_product_category foreign key products(category_id)
     references categories(category_id) on delete set null on update cascade ;
 
+alter table initial_coupons add constraint fk_initial_category foreign key initial_coupons(criteria)
+    references categories(category_id) on delete set null on update cascade ;
 
 alter table coupons add constraint fk_coupon_customer foreign key coupons(customer_id)
     references customers(customer_id) on delete cascade on update cascade ;

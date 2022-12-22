@@ -11,8 +11,8 @@ type CouponsCustomerResponse struct {
 }
 
 type CouponsResponse struct {
-	CouponCode string    `json:"coupon_code,omitempty"`
-	IsUsed     bool      `json:"is_used,omitempty"`
+	CouponCode string    `json:"coupon_code"`
+	IsUsed     bool      `json:"is_used"`
 	ExpireDate time.Time `json:"expire_date"`
 }
 

@@ -21,7 +21,7 @@ func NewCouponServiceImpl(repoCoupon repository.CouponsRepo, repoCustomer custom
 
 func (c *CouponServiceImpl) GetCouponByCustomerId(ctx context.Context, customerId string, page int) (*http_response.CouponsCustomerResponse, error) {
 	var (
-		limit        = 10
+		limit        = 5
 		offset       = limit * (page - 1)
 		wg           = sync.WaitGroup{}
 		chanCustomer = make(chan *http_response.CustomerResponse)
@@ -29,29 +29,18 @@ func (c *CouponServiceImpl) GetCouponByCustomerId(ctx context.Context, customerI
 	)
 
 	result, err := c.repoCoupon.FindCouponByCustomerId(ctx, customerId, offset, limit)
-	if result == nil && err != nil {
+	helper.PanicIfError(err)
+	if len(result) == 0 {
 		return nil, errors.New("coupon not found")
 	}
-	for _, coupon := range result {
-		dataCoupons := &http_response.CouponsResponse{
-			CouponCode: coupon.CouponCode(),
-			IsUsed:     coupon.IsUsed(),
-			ExpireDate: coupon.ExpireDate(),
-		}
-		coupons = append(coupons, dataCoupons)
-	}
 
+	coupons = http_response.ListDomainCouponsToCouponsResponse(result)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		dataCustomer, err2 := c.repoCustomer.FindCustomerById(ctx, customerId, "")
 		helper.PrintIfError(err2)
-		chanCustomer <- &http_response.CustomerResponse{
-			CustomerId: dataCustomer.CustomerId(),
-			Name:       dataCustomer.Name(),
-			Phone:      dataCustomer.Contact(),
-			CreatedAt:  dataCustomer.CreatedAt(),
-		}
+		chanCustomer <- http_response.DomainToCustomerResponse(dataCustomer)
 	}()
 	customerResult := <-chanCustomer
 	wg.Wait()

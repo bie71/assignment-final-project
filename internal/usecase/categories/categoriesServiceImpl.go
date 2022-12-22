@@ -4,9 +4,11 @@ import (
 	entity "assigment-final-project/domain/entity/categories"
 	repository "assigment-final-project/domain/repository/categories"
 	"assigment-final-project/helper"
+	"assigment-final-project/helper/requestToEntity"
 	"assigment-final-project/internal/delivery/http_request"
 	"assigment-final-project/internal/delivery/http_response"
 	"context"
+	"errors"
 	"github.com/go-playground/validator/v10"
 	"sync"
 )
@@ -26,11 +28,7 @@ func (c *CategoryServiceImpl) AddCategory(ctx context.Context, categoryRequest *
 		return "", errValidation
 	}
 
-	dataCategory := entity.NewCategories(&entity.DTOCategories{
-		CategoryId: `category-` + helper.RandomString(16),
-		Name:       categoryRequest.Name,
-	})
-
+	dataCategory := requestToEntity.CategoryRequestToEntity(categoryRequest, `category-`+helper.RandomString(16))
 	err := c.repoCategory.InsertCategory(ctx, dataCategory)
 	if err != nil {
 		return "", err
@@ -40,14 +38,18 @@ func (c *CategoryServiceImpl) AddCategory(ctx context.Context, categoryRequest *
 
 func (c *CategoryServiceImpl) FindCategoryById(ctx context.Context, categoryId string) (*http_response.CategoryResponse, error) {
 	category, err := c.repoCategory.FindCategory(ctx, categoryId)
-	if err != nil {
-		return nil, err
+	if err != nil || category == nil {
+		return nil, errors.New("category not found")
 	}
 	return http_response.DomainToCategoryResponse(category), nil
 }
 
-func (c *CategoryServiceImpl) GetCategories(ctx context.Context) ([]*http_response.CategoryResponse, error) {
-	categories, err := c.repoCategory.GetCategories(ctx)
+func (c *CategoryServiceImpl) GetCategories(ctx context.Context, page int) ([]*http_response.CategoryResponse, error) {
+	var (
+		limit  = 5
+		offset = limit * (page - 1)
+	)
+	categories, err := c.repoCategory.GetCategories(ctx, offset, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +59,7 @@ func (c *CategoryServiceImpl) GetCategories(ctx context.Context) ([]*http_respon
 func (c *CategoryServiceImpl) DeleteCategoryById(ctx context.Context, categoryId string) (string, error) {
 	category, err := c.repoCategory.FindCategory(ctx, categoryId)
 	if err != nil || category == nil {
-		return "", err
+		return "", errors.New("category not found")
 	}
 	err = c.repoCategory.DeleteCategory(ctx, categoryId)
 	if err != nil {
@@ -82,15 +84,8 @@ func (c *CategoryServiceImpl) AddCategories(ctx context.Context, categories []*h
 	go func() {
 		defer wg.Done()
 		listEntity := make([]*entity.Categories, 0)
-
 		for _, category := range categories {
-
-			categoryId := `category-` + helper.RandomString(16)
-			entity := entity.NewCategories(&entity.DTOCategories{
-				CategoryId: categoryId,
-				Name:       category.Name,
-			})
-			listEntity = append(listEntity, entity)
+			listEntity = append(listEntity, requestToEntity.CategoryRequestToEntity(category, `category-`+helper.RandomString(16)))
 		}
 		errRepo := c.repoCategory.InsertListCategory(ctx, listEntity)
 		err <- errRepo

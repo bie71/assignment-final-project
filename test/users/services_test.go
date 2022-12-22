@@ -8,7 +8,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-playground/validator/v10"
-	"log"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -27,10 +27,8 @@ func TestRegisterUser(t *testing.T) {
 		Password: "1234",
 		UserType: "owner",
 	})
-	if err != nil {
-		log.Println(err)
-	}
-	fmt.Println(user)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, user)
 }
 
 func TestLoginUser(t *testing.T) {
@@ -38,8 +36,15 @@ func TestLoginUser(t *testing.T) {
 		Username: "bie7",
 		Password: "1234",
 	})
-	if err != nil {
-		log.Println(err)
-	}
-	fmt.Println(user)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, user)
+}
+
+func TestGetUsers(t *testing.T) {
+	users, err := serviceuser.GetUsers(ctx, 1)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, users)
+
+	fmt.Println(err)
+	fmt.Println(users)
 }

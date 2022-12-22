@@ -1,16 +1,15 @@
 package usecase
 
 import (
-	"assigment-final-project/domain/entity/users"
 	users_repository "assigment-final-project/domain/repository/users"
 	users_interface "assigment-final-project/domain/usecase/users"
 	"assigment-final-project/helper"
+	"assigment-final-project/helper/requestToEntity"
 	"assigment-final-project/internal/delivery/http_request"
 	"assigment-final-project/internal/delivery/http_response"
 	"context"
 	"errors"
 	"github.com/go-playground/validator/v10"
-	"time"
 )
 
 type ServiceUsersImplement struct {
@@ -28,19 +27,7 @@ func (s *ServiceUsersImplement) AddUser(ctx context.Context, userRequest *http_r
 		return "", errValidation
 	}
 
-	hashPassword := helper.HashAndSalt([]byte(userRequest.Password))
-	time, err := time.Parse(time.RFC1123Z, time.Now().Format(time.RFC1123Z))
-
-	dataUser, err := entity.NewUsers(&entity.DTOUsers{
-		UserId:    `user-` + helper.RandomString(16),
-		Name:      userRequest.Name,
-		Username:  userRequest.Username,
-		Password:  hashPassword,
-		UserType:  userRequest.UserType,
-		CreatedAt: time,
-	})
-	helper.PanicIfError(err)
-
+	dataUser, _ := requestToEntity.UserRequestToEntity(userRequest, `user-`+helper.RandomString(16))
 	username, err := s.UserRepo.FindUserByUsername(ctx, userRequest.Username)
 	if username != nil {
 		return "", errors.New("username already registered")
@@ -59,8 +46,8 @@ func (s *ServiceUsersImplement) FindUser(ctx context.Context, UserLogin *http_re
 	}
 
 	user, err := s.UserRepo.FindUserByUsername(ctx, UserLogin.Username)
-	if err != nil {
-		return nil, errors.New("user not yet registered")
+	if err != nil || user == nil {
+		return nil, errors.New("you are not registered")
 	}
 
 	if !helper.ComparePassword(user.Password(), []byte(UserLogin.Password)) {
@@ -69,8 +56,13 @@ func (s *ServiceUsersImplement) FindUser(ctx context.Context, UserLogin *http_re
 	return http_response.DomainUsersToResponseUsers(user), nil
 }
 
-func (s *ServiceUsersImplement) GetUsers(ctx context.Context) ([]*http_response.UserResponse, error) {
-	users, err := s.UserRepo.GetUsers(ctx)
+func (s *ServiceUsersImplement) GetUsers(ctx context.Context, page int) ([]*http_response.UserResponse, error) {
+	var (
+		limit  = 5
+		offset = limit * (page - 1)
+	)
+
+	users, err := s.UserRepo.GetUsers(ctx, offset, limit)
 	if err != nil {
 		return nil, err
 	}

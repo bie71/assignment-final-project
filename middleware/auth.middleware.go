@@ -19,7 +19,7 @@ func AuthHandler(next http.Handler) http.Handler {
 		token, err := r.Cookie(nameToken)
 		if err != nil {
 			if err == http.ErrNoCookie {
-				delivery.ResponseDelivery(w, http.StatusUnauthorized, nil, err.Error())
+				delivery.ResponseDelivery(w, http.StatusUnauthorized, nil, "You are not logged in yet")
 				return
 			}
 

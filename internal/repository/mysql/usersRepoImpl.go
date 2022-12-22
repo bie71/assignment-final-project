@@ -42,22 +42,21 @@ func (u *UsersRepoImpl) InsertUser(ctx context.Context, dataUser *entity.Users) 
 	return errTx
 }
 
-func (u *UsersRepoImpl) GetUsers(ctx context.Context) ([]*entity.Users, error) {
+func (u *UsersRepoImpl) GetUsers(ctx context.Context, offsetNum, limitNum int) ([]*entity.Users, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	stmt := fmt.Sprintf(`SELECT * FROM %s`, models.TableNameUsers())
+	stmt := fmt.Sprintf(`SELECT * FROM %s GROUP BY user_id LIMIT ?,?`, models.TableNameUsers())
 	opts := &dbq.Options{
 		SingleResult:   false,
 		ConcreteStruct: models.UsersModels{},
 		DecoderConfig:  dbq.StdTimeConversionConfig(),
 	}
 
-	result, err := dbq.Q(ctx, u.db, stmt, opts)
+	result, err := dbq.Q(ctx, u.db, stmt, opts, offsetNum, limitNum)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ToListDomainUser(result.([]*models.UsersModels))
-		return data, nil
+		return mapper.ToListDomainUser(result.([]*models.UsersModels)), nil
 	}
 	return nil, errors.New("data empty")
 }
@@ -76,8 +75,7 @@ func (u *UsersRepoImpl) FindUserById(ctx context.Context, userId string) (*entit
 	result, err := dbq.Q(ctx, u.db, stmt, opts, userId)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ModelsUsersToDomainUsers(result.(*models.UsersModels))
-		return data, nil
+		return mapper.ModelsUsersToDomainUsers(result.(*models.UsersModels)), nil
 	}
 	return nil, errors.New("data not found")
 }
@@ -96,8 +94,7 @@ func (u *UsersRepoImpl) FindUserByUsername(ctx context.Context, userName string)
 	result, err := dbq.Q(ctx, u.db, stmt, opts, userName)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ModelsUsersToDomainUsers(result.(*models.UsersModels))
-		return data, nil
+		return mapper.ModelsUsersToDomainUsers(result.(*models.UsersModels)), nil
 	}
 	return nil, errors.New("data not found")
 }
@@ -116,7 +113,6 @@ func (u *UsersRepoImpl) UpdateById(ctx context.Context, dataUser *entity.Users, 
 
 		errCommit := txCommit()
 		helper.PanicIfError(errCommit)
-
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
@@ -143,7 +139,6 @@ func (u *UsersRepoImpl) DeleteById(ctx context.Context, userId string) error {
 
 		errCommit := txCommit()
 		helper.PanicIfError(errCommit)
-
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {

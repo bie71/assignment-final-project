@@ -36,7 +36,7 @@ func TestInsertCouponsPrefix(t *testing.T) {
 }
 
 func TestGetCouponsPrefix(t *testing.T) {
-	prefixs, err := repoCouponsPrefix.GetPrefixs(ctx)
+	prefixs, err := repoCouponsPrefix.GetPrefixs(ctx, 0, 10)
 	fmt.Println(err, " this error line")
 	for _, prefix := range prefixs {
 		fmt.Println(prefix)
@@ -69,7 +69,7 @@ func TestDeleteCouponsPrefix(t *testing.T) {
 }
 
 func TestFindCouponPrefix(t *testing.T) {
-	prefix, err := repoCouponsPrefix.FindCouponPrefix(ctx, "ulti", "computer")
+	prefix, err := repoCouponsPrefix.FindCouponPrefix(ctx, "ulti", "fashion")
 	assert.NoError(t, err)
 	assert.NotEmpty(t, prefix)
 	assert.Equal(t, "ulti", prefix.PrefixName())

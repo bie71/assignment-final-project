@@ -51,7 +51,7 @@ func TestFindCategoryById(t *testing.T) {
 }
 
 func TestGetCategories(t *testing.T) {
-	categories, err := repoCategories.GetCategories(ctx)
+	categories, err := repoCategories.GetCategories(ctx, 0, 5)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, categories)
 }

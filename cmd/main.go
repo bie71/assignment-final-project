@@ -8,12 +8,14 @@ import (
 	handler "assigment-final-project/internal/delivery/http/coupons"
 	"assigment-final-project/internal/delivery/http/customers"
 	products_handler "assigment-final-project/internal/delivery/http/products"
+	handler2 "assigment-final-project/internal/delivery/http/transactons"
 	users_handler "assigment-final-project/internal/delivery/http/users"
 	repository "assigment-final-project/internal/repository/mysql"
 	categories_service "assigment-final-project/internal/usecase/categories"
 	usecase "assigment-final-project/internal/usecase/coupons"
 	customers_service "assigment-final-project/internal/usecase/customers"
 	products_service "assigment-final-project/internal/usecase/products"
+	usecase2 "assigment-final-project/internal/usecase/transactions"
 	users_service "assigment-final-project/internal/usecase/users"
 	"fmt"
 	"github.com/go-playground/validator/v10"
@@ -45,11 +47,16 @@ var (
 	repoCoupons          = repository.NewCouponsRepoImpl(db)
 	usecaseCoupons       = usecase.NewCouponServiceImpl(repoCoupons, repoCustomer)
 	couponsHandler       = handler.NewCouponHandlerImpl(useCaseCouponsPrefix, usecaseCoupons)
+	repoTransactions     = repository.NewTransactionRepoImpl(db)
+	repoTransactionItems = repository.NewTransactionItemsRepoImpl(db)
+	useCaseTransaction   = usecase2.NewTransactionServiceImpl(repoTransactions, repoTransactionItems, repoCoupons,
+		repoCouponsPrefix, validate)
+	transactionsHandler = handler2.NewTransactionsHandlerImpl(useCaseTransaction)
 )
 
 func main() {
 
-	router := app.Router(userHandler, customerHandler, productHandler, categoryHandler, couponsHandler)
+	router := app.Router(userHandler, customerHandler, productHandler, categoryHandler, couponsHandler, transactionsHandler)
 
 	server := http.Server{
 		Addr:         host + ":" + port,

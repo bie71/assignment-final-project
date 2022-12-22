@@ -1,5 +1,7 @@
 alter table products drop foreign key fk_product_category;
 
+alter table initial_coupons drop foreign key fk_initial_category;
+
 alter table coupons drop foreign key fk_coupon_customer;
 
 alter table transaction drop foreign key fk_transaction_customer;

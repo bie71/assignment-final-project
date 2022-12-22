@@ -1,12 +1,13 @@
 package usecase
 
 import (
-	entity "assigment-final-project/domain/entity/products"
 	repository "assigment-final-project/domain/repository/products"
 	"assigment-final-project/helper"
+	"assigment-final-project/helper/requestToEntity"
 	"assigment-final-project/internal/delivery/http_request"
 	"assigment-final-project/internal/delivery/http_response"
 	"context"
+	"errors"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -25,14 +26,7 @@ func (p *ProductsServiceImpl) AddProduct(ctx context.Context, productRequest *ht
 		return "", errValidation
 	}
 
-	dataProduct := entity.NewProducts(&entity.DTOProducts{
-		ProductId:  `product-` + helper.RandomString(16),
-		Name:       productRequest.Name,
-		Price:      productRequest.Price,
-		CategoryId: productRequest.CategoryId,
-		Stock:      productRequest.Stock,
-	})
-
+	dataProduct := requestToEntity.ProductRequestToEntity(productRequest, `product-`+helper.RandomString(16))
 	err := p.repoProducts.InsertProduct(ctx, dataProduct)
 	if err != nil {
 		return "", err
@@ -43,15 +37,19 @@ func (p *ProductsServiceImpl) AddProduct(ctx context.Context, productRequest *ht
 
 func (p *ProductsServiceImpl) FindProductById(ctx context.Context, productId string) (*http_response.ProductsResponse, error) {
 	product, err := p.repoProducts.FindProduct(ctx, productId)
-	if err != nil {
-		return nil, err
+	if err != nil || product == nil {
+		return nil, errors.New("product not found")
 	}
 
 	return http_response.DomainProductsToProductsResponse(product), nil
 }
 
-func (p *ProductsServiceImpl) GetProducts(ctx context.Context) ([]*http_response.ProductsResponse, error) {
-	products, err := p.repoProducts.GetProducts(ctx)
+func (p *ProductsServiceImpl) GetProducts(ctx context.Context, page int) ([]*http_response.ProductsResponse, error) {
+	var (
+		limit  = 5
+		offset = limit * (page - 1)
+	)
+	products, err := p.repoProducts.GetProducts(ctx, offset, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -64,36 +62,24 @@ func (p *ProductsServiceImpl) UpdateProduct(ctx context.Context, productRequest 
 	if errValidation != nil {
 		return nil, errValidation
 	}
-	_, err := p.repoProducts.FindProduct(ctx, productId)
-	if err != nil {
-		return nil, err
+	result, err := p.repoProducts.FindProduct(ctx, productId)
+	if err != nil || result == nil {
+		return nil, errors.New("product not found")
 	}
 
-	dataProduct := entity.NewProducts(&entity.DTOProducts{
-		ProductId:  productId,
-		Name:       productRequest.Name,
-		Price:      productRequest.Price,
-		CategoryId: productRequest.CategoryId,
-		Stock:      productRequest.Stock,
-	})
-
+	dataProduct := requestToEntity.ProductRequestToEntity(productRequest, productId)
 	product, err := p.repoProducts.UpdateProduct(ctx, dataProduct)
-	if err != nil {
-		return nil, err
-	}
+	helper.PanicIfError(err)
 
 	return http_response.DomainProductsToProductsResponse(product), nil
 }
 
 func (p *ProductsServiceImpl) DeleteProductById(ctx context.Context, productId string) (string, error) {
-	_, err := p.repoProducts.FindProduct(ctx, productId)
-	if err != nil {
-		return "", err
+	result, err := p.repoProducts.FindProduct(ctx, productId)
+	if err != nil || result == nil {
+		return "", errors.New("product not found")
 	}
-
 	err = p.repoProducts.DeleteProduct(ctx, productId)
-	if err != nil {
-		return "", err
-	}
+	helper.PanicIfError(err)
 	return "Success Delete Product", nil
 }

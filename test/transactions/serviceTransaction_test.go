@@ -21,30 +21,22 @@ var (
 func TestInserTransactionService(t *testing.T) {
 	data := &http_request.TransactionRequest{
 		CustomerId: "bie7",
-		CouponCode: "BASIC-Cv0HXrTzFmOug4y0",
+		CouponCode: "",
 		PurchaseItems: []*http_request.TransactionItemsRequest{
 			{
-				ProductId: "p4",
-				Quantity:  1,
-			},
-			{
 				ProductId: "p1",
-				Quantity:  1,
-			},
-			{
-				ProductId: "p2",
-				Quantity:  1,
+				Quantity:  3,
 			},
 		},
 	}
 
 	result, err := transactionService.AddTransaction(ctx, data)
 	assert.NoError(t, err)
-	fmt.Println(result)
+	assert.NotEmpty(t, result)
 }
 
 func TestGetTransaction(t *testing.T) {
-	transactions, err := transactionService.GetTransaction(ctx, 2)
+	transactions, err := transactionService.GetTransaction(ctx, 1)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, transactions)
 	for i, transaction := range transactions {

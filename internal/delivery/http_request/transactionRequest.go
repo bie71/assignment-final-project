@@ -8,5 +8,5 @@ type TransactionRequest struct {
 
 type TransactionItemsRequest struct {
 	ProductId string `json:"product_id,omitempty" validate:"required"`
-	Quantity  uint   `json:"quantity,omitempty" validate:"required"`
+	Quantity  uint   `json:"quantity,omitempty" validate:"required,numeric"`
 }

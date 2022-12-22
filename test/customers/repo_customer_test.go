@@ -39,7 +39,7 @@ func TestDeleteCustomerByIdOrPhone(t *testing.T) {
 }
 
 func TestGetCustomers(t *testing.T) {
-	customers, err := repoCustomer.GetCustomers(ctx)
+	customers, err := repoCustomer.GetCustomers(ctx, 0, 5)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, customers)
 }

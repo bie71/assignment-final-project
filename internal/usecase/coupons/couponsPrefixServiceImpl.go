@@ -1,12 +1,13 @@
 package usecase
 
 import (
-	entity "assigment-final-project/domain/entity/coupons"
 	repository "assigment-final-project/domain/repository/coupons"
 	"assigment-final-project/helper"
+	"assigment-final-project/helper/requestToEntity"
 	"assigment-final-project/internal/delivery/http_request"
 	"assigment-final-project/internal/delivery/http_response"
 	"context"
+	"errors"
 	"github.com/go-playground/validator/v10"
 	"time"
 )
@@ -28,25 +29,24 @@ func (c *CouponsPrefixServiceImpl) AddCoupon(ctx context.Context, prefix *http_r
 
 	dateExpire, err := time.Parse("2006-01-02", prefix.ExpireDate)
 	helper.PanicIfError(err)
+	if !dateExpire.After(time.Now()) {
+		return "", errors.New("expiration date must be later than the current date")
+	}
 
-	data := entity.NewCouponsPrefix(&entity.DTOCouponsPrefix{
-		PrefixName:   prefix.PrefixName,
-		MinimumPrice: prefix.MinimumPrice,
-		Discount:     prefix.Discount,
-		ExpireDate:   dateExpire,
-		Criteria:     prefix.Criteria,
-		CreatedAt:    time.Now(),
-	})
-
-	err = c.repoCouponsPrefix.InsertPrefix(ctx, data)
+	err = c.repoCouponsPrefix.InsertPrefix(ctx, requestToEntity.CouponPrefixRequestToDomainEntity(prefix, dateExpire))
 	if err != nil {
 		return "", err
 	}
 	return "Success Add Coupon", nil
 }
 
-func (c *CouponsPrefixServiceImpl) GetCoupons(ctx context.Context) ([]*http_response.CouponsPrefixResponse, error) {
-	data, err := c.repoCouponsPrefix.GetPrefixs(ctx)
+func (c *CouponsPrefixServiceImpl) GetCoupons(ctx context.Context, page int) ([]*http_response.CouponsPrefixResponse, error) {
+	var (
+		limit  = 5
+		offset = limit * (page - 1)
+	)
+
+	data, err := c.repoCouponsPrefix.GetPrefixs(ctx, offset, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -61,18 +61,11 @@ func (c *CouponsPrefixServiceImpl) UpdateCoupon(ctx context.Context, prefix *htt
 
 	dateExpire, err := time.Parse("2006-01-02", prefix.ExpireDate)
 	helper.PanicIfError(err)
+	if !dateExpire.After(time.Now()) {
+		return nil, errors.New("expiration date must be later than the current date")
+	}
 
-	data := entity.NewCouponsPrefix(&entity.DTOCouponsPrefix{
-		Id:           id,
-		PrefixName:   prefix.PrefixName,
-		MinimumPrice: prefix.MinimumPrice,
-		Discount:     prefix.Discount,
-		ExpireDate:   dateExpire,
-		Criteria:     prefix.Criteria,
-		CreatedAt:    time.Now(),
-	})
-
-	updatePrefix, err := c.repoCouponsPrefix.UpdatePrefix(ctx, data)
+	updatePrefix, err := c.repoCouponsPrefix.UpdatePrefix(ctx, requestToEntity.CouponPrefixRequestToDomainEntity(prefix, dateExpire))
 	if err != nil {
 		return nil, err
 	}
@@ -80,10 +73,9 @@ func (c *CouponsPrefixServiceImpl) UpdateCoupon(ctx context.Context, prefix *htt
 }
 
 func (c *CouponsPrefixServiceImpl) DeleteCoupon(ctx context.Context, id int) (string, error) {
-
 	err := c.repoCouponsPrefix.DeletePrefix(ctx, id)
 	if err != nil {
-		return "", err
+		return "", errors.New("coupon prefix not found")
 	}
 	return "Success Delete Coupon", nil
 }

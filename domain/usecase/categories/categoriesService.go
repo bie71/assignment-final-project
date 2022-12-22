@@ -10,6 +10,6 @@ type CategoryService interface {
 	AddCategory(ctx context.Context, categoryRequest *http_request.CategoryRequest) (string, error)
 	AddCategories(ctx context.Context, categories []*http_request.CategoryRequest) (string, error)
 	FindCategoryById(ctx context.Context, categoryId string) (*http_response.CategoryResponse, error)
-	GetCategories(ctx context.Context) ([]*http_response.CategoryResponse, error)
+	GetCategories(ctx context.Context, page int) ([]*http_response.CategoryResponse, error)
 	DeleteCategoryById(ctx context.Context, categoryId string) (string, error)
 }

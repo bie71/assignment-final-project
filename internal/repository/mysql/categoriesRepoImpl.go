@@ -55,28 +55,26 @@ func (c *CategoryRepoImpl) FindCategory(ctx context.Context, categoryId string) 
 	result, err := dbq.Q(ctx, c.db, stmt, opts, categoryId)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ModelCategoriesToDomainCategories(result.(*models.CategoriesModel))
-		return data, nil
+		return mapper.ModelCategoriesToDomainCategories(result.(*models.CategoriesModel)), nil
 	}
 	return nil, errors.New("data not found")
 }
 
-func (c *CategoryRepoImpl) GetCategories(ctx context.Context) ([]*entity.Categories, error) {
+func (c *CategoryRepoImpl) GetCategories(ctx context.Context, offsetNum, limitNum int) ([]*entity.Categories, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	stmt := fmt.Sprintf("SELECT * FROM %s ", models.TableNameCategories())
+	stmt := fmt.Sprintf("SELECT * FROM %s GROUP BY category_id LIMIT ?,?", models.TableNameCategories())
 	opts := &dbq.Options{
 		SingleResult:   false,
 		ConcreteStruct: models.CategoriesModel{},
 		DecoderConfig:  dbq.StdTimeConversionConfig(),
 	}
 
-	result, err := dbq.Q(ctx, c.db, stmt, opts)
+	result, err := dbq.Q(ctx, c.db, stmt, opts, offsetNum, limitNum)
 	helper.PanicIfError(err)
 	if result != nil {
-		data := mapper.ListModelCategoriesToListDomainCategories(result.([]*models.CategoriesModel))
-		return data, nil
+		return mapper.ListModelCategoriesToListDomainCategories(result.([]*models.CategoriesModel)), nil
 	}
 	return nil, errors.New("data empty")
 }
@@ -95,7 +93,6 @@ func (c *CategoryRepoImpl) DeleteCategory(ctx context.Context, categoryId string
 
 		errCommit := txCommit()
 		helper.PanicIfError(errCommit)
-
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {

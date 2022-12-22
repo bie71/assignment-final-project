@@ -19,8 +19,8 @@ func TestAddCoupons(t *testing.T) {
 		PrefixName:   "ulti",
 		MinimumPrice: 2000,
 		Discount:     10,
-		ExpireDate:   "2023-01-01",
-		Criteria:     "new console",
+		ExpireDate:   "2022-12-23",
+		Criteria:     "1",
 	}
 	result, err := serviceCouponsPrefix.AddCoupon(ctx, data)
 	if err != nil {
@@ -33,7 +33,7 @@ func TestAddCoupons(t *testing.T) {
 }
 
 func TestGetCouponsPrefixService(t *testing.T) {
-	coupons, err := serviceCouponsPrefix.GetCoupons(ctx)
+	coupons, err := serviceCouponsPrefix.GetCoupons(ctx, 1)
 	if err != nil {
 		fmt.Println(err)
 	}

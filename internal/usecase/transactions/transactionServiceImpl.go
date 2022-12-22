@@ -118,8 +118,8 @@ func (t *TransactionServiceImpl) AddTransaction(ctx context.Context, transaction
 		defer wg.Done()
 		strList := make([]string, 0)
 
-		prefixs, err := t.repoInitialCoupon.GetPrefixs(ctx)
-		helper.PanicIfError(err)
+		prefixs, err := t.repoInitialCoupon.GetPrefixMinimumPrice(ctx, totalPriceProduct)
+		helper.PrintIfError(err)
 		for _, prefix := range prefixs {
 			if totalPriceProduct >= float64(prefix.MinimumPrice()) {
 				couponCode := strings.ToUpper(prefix.PrefixName()) + "-" + helper.RandomString(16)
@@ -142,7 +142,7 @@ func (t *TransactionServiceImpl) AddTransaction(ctx context.Context, transaction
 }
 func (t *TransactionServiceImpl) GetTransaction(ctx context.Context, page int) ([]*http_response.TransactionResponse, error) {
 	var (
-		limit               = 10
+		limit               = 5
 		offset              = limit * (page - 1)
 		wg                  = sync.WaitGroup{}
 		chanListTransaction = make(chan []*http_response.TransactionResponse)
@@ -166,8 +166,8 @@ func (t *TransactionServiceImpl) GetTransaction(ctx context.Context, page int) (
 					listItem = append(listItem, helper.ToTransactionItemsResponse(itemsProduct))
 				}
 			}
-
 			listTransaction = append(listTransaction, helper.ToTransactionsResponse(transaction, resultCustomer, listItem))
+
 			wg.Done()
 		}
 		chanListTransaction <- listTransaction
@@ -185,8 +185,8 @@ func (t *TransactionServiceImpl) FindTransaction(ctx context.Context, transactio
 	)
 
 	transaction, err := t.repoTransaction.FindTransaction(ctx, transactionId)
-	if err != nil {
-		return nil, err
+	if err != nil || transaction == nil {
+		return nil, errors.New("transaction not found")
 	}
 
 	wg.Add(1)
@@ -217,8 +217,6 @@ func (t *TransactionServiceImpl) DeleteTransaction(ctx context.Context, transact
 		return "", errors.New("transaction not found")
 	}
 	err := t.repoTransaction.DeleteTransaction(ctx, transactionId)
-	if err != nil {
-		return "", err
-	}
+	helper.PrintIfError(err)
 	return "Success Delete Transaction", nil
 }
