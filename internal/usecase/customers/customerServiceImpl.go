@@ -9,6 +9,8 @@ import (
 	"context"
 	"errors"
 	"github.com/go-playground/validator/v10"
+	"os"
+	"strconv"
 )
 
 type CustomerServiceImpl struct {
@@ -51,8 +53,8 @@ func (c *CustomerServiceImpl) FindCustomer(ctx context.Context, customerId, phon
 
 func (c *CustomerServiceImpl) GetCustomers(ctx context.Context, page int) ([]*http_response.CustomerResponse, error) {
 	var (
-		limit  = 5
-		offset = limit * (page - 1)
+		limit, _ = strconv.Atoi(os.Getenv("LIMIT"))
+		offset   = limit * (page - 1)
 	)
 	customers, err := c.customerRepo.GetCustomers(ctx, offset, limit)
 	if err != nil {

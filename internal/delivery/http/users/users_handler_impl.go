@@ -3,8 +3,10 @@ package Handler_Users
 import (
 	user_service "assigment-final-project/domain/usecase/users"
 	"assigment-final-project/helper"
+	mysql_connection "assigment-final-project/internal/config/database/mysql"
 	"assigment-final-project/internal/delivery"
 	"assigment-final-project/internal/delivery/http_request"
+	"assigment-final-project/internal/delivery/http_response"
 	"assigment-final-project/middleware/jwt"
 	"net/http"
 	"os"
@@ -73,7 +75,7 @@ func (u *UserHandlerImpl) Logout(w http.ResponseWriter, r *http.Request) {
 		Name:   nameToken,
 		MaxAge: -1,
 	})
-	delivery.ResponseDelivery(w, http.StatusOK, "User has been logout", nil)
+	delivery.ResponseDelivery(w, http.StatusOK, "User Has Logged Out", nil)
 }
 
 func (u *UserHandlerImpl) GetUsers(w http.ResponseWriter, r *http.Request) {
@@ -82,12 +84,13 @@ func (u *UserHandlerImpl) GetUsers(w http.ResponseWriter, r *http.Request) {
 		page = "1"
 	}
 	p, err := strconv.Atoi(page)
+	limit, _ := strconv.Atoi(os.Getenv("LIMIT"))
 	helper.PanicIfError(err)
 	result, err := u.UsersService.GetUsers(r.Context(), p)
 	if err != nil {
 		delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 		return
 	}
-
-	delivery.ResponseDelivery(w, http.StatusOK, result, nil)
+	rows := helper.CountTotalRows(r.Context(), mysql_connection.InitMysqlDB(), "users")
+	delivery.ResponseDelivery(w, http.StatusOK, http_response.PaginationInfo(p, limit, rows.TotalRows, result), nil)
 }

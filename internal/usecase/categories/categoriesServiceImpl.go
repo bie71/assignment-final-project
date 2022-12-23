@@ -10,6 +10,8 @@ import (
 	"context"
 	"errors"
 	"github.com/go-playground/validator/v10"
+	"os"
+	"strconv"
 	"sync"
 )
 
@@ -46,8 +48,8 @@ func (c *CategoryServiceImpl) FindCategoryById(ctx context.Context, categoryId s
 
 func (c *CategoryServiceImpl) GetCategories(ctx context.Context, page int) ([]*http_response.CategoryResponse, error) {
 	var (
-		limit  = 5
-		offset = limit * (page - 1)
+		limit, _ = strconv.Atoi(os.Getenv("LIMIT"))
+		offset   = limit * (page - 1)
 	)
 	categories, err := c.repoCategory.GetCategories(ctx, offset, limit)
 	if err != nil {

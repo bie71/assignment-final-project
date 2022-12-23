@@ -10,6 +10,8 @@ import (
 	"context"
 	"errors"
 	"github.com/go-playground/validator/v10"
+	"os"
+	"strconv"
 )
 
 type ServiceUsersImplement struct {
@@ -58,8 +60,8 @@ func (s *ServiceUsersImplement) FindUser(ctx context.Context, UserLogin *http_re
 
 func (s *ServiceUsersImplement) GetUsers(ctx context.Context, page int) ([]*http_response.UserResponse, error) {
 	var (
-		limit  = 5
-		offset = limit * (page - 1)
+		limit, _ = strconv.Atoi(os.Getenv("LIMIT"))
+		offset   = limit * (page - 1)
 	)
 
 	users, err := s.UserRepo.GetUsers(ctx, offset, limit)

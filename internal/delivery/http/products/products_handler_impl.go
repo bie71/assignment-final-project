@@ -3,10 +3,13 @@ package handler
 import (
 	usecase "assigment-final-project/domain/usecase/products"
 	"assigment-final-project/helper"
+	mysql_connection "assigment-final-project/internal/config/database/mysql"
 	"assigment-final-project/internal/delivery"
 	"assigment-final-project/internal/delivery/http_request"
+	"assigment-final-project/internal/delivery/http_response"
 	"github.com/go-playground/validator/v10"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -44,6 +47,7 @@ func (p *ProductsHandlerImpl) GetsFindAndDeleteProduct(w http.ResponseWriter, r 
 		page = "1"
 	}
 	pg, err := strconv.Atoi(page)
+	limit, _ := strconv.Atoi(os.Getenv("LIMIT"))
 	helper.PanicIfError(err)
 
 	if query == "" {
@@ -52,7 +56,8 @@ func (p *ProductsHandlerImpl) GetsFindAndDeleteProduct(w http.ResponseWriter, r 
 			delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 			return
 		}
-		delivery.ResponseDelivery(w, http.StatusOK, products, nil)
+		rows := helper.CountTotalRows(r.Context(), mysql_connection.InitMysqlDB(), "products")
+		delivery.ResponseDelivery(w, http.StatusOK, http_response.PaginationInfo(pg, limit, rows.TotalRows, products), nil)
 		return
 	}
 
@@ -99,11 +104,13 @@ func (p *ProductsHandlerImpl) GetProducts(w http.ResponseWriter, r *http.Request
 		page = "1"
 	}
 	pg, err := strconv.Atoi(page)
+	limit, _ := strconv.Atoi(os.Getenv("LIMIT"))
 	helper.PanicIfError(err)
 	result, err := p.serviceProducts.GetProducts(r.Context(), pg)
 	if err != nil {
 		delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 		return
 	}
-	delivery.ResponseDelivery(w, http.StatusOK, result, nil)
+	rows := helper.CountTotalRows(r.Context(), mysql_connection.InitMysqlDB(), "products")
+	delivery.ResponseDelivery(w, http.StatusOK, http_response.PaginationInfo(pg, limit, rows.TotalRows, result), nil)
 }

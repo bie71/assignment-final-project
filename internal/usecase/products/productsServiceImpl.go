@@ -9,6 +9,8 @@ import (
 	"context"
 	"errors"
 	"github.com/go-playground/validator/v10"
+	"os"
+	"strconv"
 )
 
 type ProductsServiceImpl struct {
@@ -46,8 +48,8 @@ func (p *ProductsServiceImpl) FindProductById(ctx context.Context, productId str
 
 func (p *ProductsServiceImpl) GetProducts(ctx context.Context, page int) ([]*http_response.ProductsResponse, error) {
 	var (
-		limit  = 5
-		offset = limit * (page - 1)
+		limit, _ = strconv.Atoi(os.Getenv("LIMIT"))
+		offset   = limit * (page - 1)
 	)
 	products, err := p.repoProducts.GetProducts(ctx, offset, limit)
 	if err != nil {

@@ -11,6 +11,8 @@ import (
 	"errors"
 	"github.com/go-playground/validator/v10"
 	"log"
+	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -142,7 +144,7 @@ func (t *TransactionServiceImpl) AddTransaction(ctx context.Context, transaction
 }
 func (t *TransactionServiceImpl) GetTransaction(ctx context.Context, page int) ([]*http_response.TransactionResponse, error) {
 	var (
-		limit               = 5
+		limit, _            = strconv.Atoi(os.Getenv("LIMIT"))
 		offset              = limit * (page - 1)
 		wg                  = sync.WaitGroup{}
 		chanListTransaction = make(chan []*http_response.TransactionResponse)

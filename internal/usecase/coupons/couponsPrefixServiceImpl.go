@@ -9,6 +9,8 @@ import (
 	"context"
 	"errors"
 	"github.com/go-playground/validator/v10"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -42,8 +44,8 @@ func (c *CouponsPrefixServiceImpl) AddCoupon(ctx context.Context, prefix *http_r
 
 func (c *CouponsPrefixServiceImpl) GetCoupons(ctx context.Context, page int) ([]*http_response.CouponsPrefixResponse, error) {
 	var (
-		limit  = 5
-		offset = limit * (page - 1)
+		limit, _ = strconv.Atoi(os.Getenv("LIMIT"))
+		offset   = limit * (page - 1)
 	)
 
 	data, err := c.repoCouponsPrefix.GetPrefixs(ctx, offset, limit)

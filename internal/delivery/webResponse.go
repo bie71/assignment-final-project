@@ -12,9 +12,9 @@ type WebResponse struct {
 }
 
 type Status struct {
-	Error        bool    `json:"error"`
-	ErrorMessage any     `json:"error_message"`
-	Data         *Result `json:"data"`
+	Error        bool `json:"error"`
+	ErrorMessage any  `json:"error_message"`
+	Data         any  `json:"data"`
 }
 
 type Result struct {

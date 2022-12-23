@@ -3,9 +3,12 @@ package handler
 import (
 	usecase "assigment-final-project/domain/usecase/categories"
 	"assigment-final-project/helper"
+	mysql_connection "assigment-final-project/internal/config/database/mysql"
 	"assigment-final-project/internal/delivery"
 	"assigment-final-project/internal/delivery/http_request"
+	"assigment-final-project/internal/delivery/http_response"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -92,11 +95,14 @@ func (c *CategoryHandlerImpl) GetCategories(w http.ResponseWriter, r *http.Reque
 		page = "1"
 	}
 	p, err := strconv.Atoi(page)
+	limit, _ := strconv.Atoi(os.Getenv("LIMIT"))
 	helper.PanicIfError(err)
 	data, err := c.categoryService.GetCategories(r.Context(), p)
 	if err != nil {
 		delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 		return
 	}
-	delivery.ResponseDelivery(w, http.StatusOK, data, nil)
+
+	rows := helper.CountTotalRows(r.Context(), mysql_connection.InitMysqlDB(), "categories")
+	delivery.ResponseDelivery(w, http.StatusOK, http_response.PaginationInfo(p, limit, rows.TotalRows, data), nil)
 }
