@@ -4,6 +4,7 @@ import (
 	repository "assigment-final-project/domain/repository/coupons"
 	customers "assigment-final-project/domain/repository/customers"
 	"assigment-final-project/helper"
+	mysql_connection "assigment-final-project/internal/config/database/mysql"
 	"assigment-final-project/internal/delivery/http_response"
 	"context"
 	"errors"
@@ -19,7 +20,7 @@ func NewCouponServiceImpl(repoCoupon repository.CouponsRepo, repoCustomer custom
 	return &CouponServiceImpl{repoCoupon: repoCoupon, repoCustomer: repoCustomer}
 }
 
-func (c *CouponServiceImpl) GetCouponByCustomerId(ctx context.Context, customerId string, page int) (*http_response.CouponsCustomerResponse, error) {
+func (c *CouponServiceImpl) GetCouponByCustomerId(ctx context.Context, customerId string, page int) (*http_response.CouponsCustomerResponse, int, error) {
 	var (
 		limit        = 5
 		offset       = limit * (page - 1)
@@ -31,7 +32,7 @@ func (c *CouponServiceImpl) GetCouponByCustomerId(ctx context.Context, customerI
 	result, err := c.repoCoupon.FindCouponByCustomerId(ctx, customerId, offset, limit)
 	helper.PanicIfError(err)
 	if len(result) == 0 {
-		return nil, errors.New("coupon not found")
+		return nil, 0, errors.New("coupon not found")
 	}
 
 	coupons = http_response.ListDomainCouponsToCouponsResponse(result)
@@ -45,8 +46,9 @@ func (c *CouponServiceImpl) GetCouponByCustomerId(ctx context.Context, customerI
 	customerResult := <-chanCustomer
 	wg.Wait()
 
+	rows := helper.CountTotalRows(ctx, mysql_connection.InitMysqlDB(), "coupons")
 	return &http_response.CouponsCustomerResponse{
 		Customer: customerResult,
 		Coupons:  coupons,
-	}, nil
+	}, rows.TotalRows, nil
 }

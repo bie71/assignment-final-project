@@ -3,7 +3,6 @@ package customers
 import (
 	usecase "assigment-final-project/domain/usecase/customers"
 	"assigment-final-project/helper"
-	mysql_connection "assigment-final-project/internal/config/database/mysql"
 	"assigment-final-project/internal/delivery"
 	"assigment-final-project/internal/delivery/http_request"
 	"assigment-final-project/internal/delivery/http_response"
@@ -53,13 +52,13 @@ func (c *CustomerHandlerImpl) GetAndDeleteCustomer(w http.ResponseWriter, r *htt
 	}
 
 	if customerId == "" {
-		data, err := c.customerService.GetCustomers(r.Context(), p)
+		data, rows, err := c.customerService.GetCustomers(r.Context(), p)
 		if err != nil {
 			delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 			return
 		}
-		rows := helper.CountTotalRows(r.Context(), mysql_connection.InitMysqlDB(), "customers")
-		delivery.ResponseDelivery(w, http.StatusOK, http_response.PaginationInfo(p, limit, rows.TotalRows, data), nil)
+
+		delivery.ResponseDelivery(w, http.StatusOK, http_response.PaginationInfo(p, limit, rows, data), nil)
 		return
 	}
 

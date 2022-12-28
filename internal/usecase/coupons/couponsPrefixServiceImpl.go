@@ -4,6 +4,7 @@ import (
 	repository "assigment-final-project/domain/repository/coupons"
 	"assigment-final-project/helper"
 	"assigment-final-project/helper/requestToEntity"
+	mysql_connection "assigment-final-project/internal/config/database/mysql"
 	"assigment-final-project/internal/delivery/http_request"
 	"assigment-final-project/internal/delivery/http_response"
 	"context"
@@ -42,7 +43,7 @@ func (c *CouponsPrefixServiceImpl) AddCoupon(ctx context.Context, prefix *http_r
 	return "Success Add Coupon", nil
 }
 
-func (c *CouponsPrefixServiceImpl) GetCoupons(ctx context.Context, page int) ([]*http_response.CouponsPrefixResponse, error) {
+func (c *CouponsPrefixServiceImpl) GetCoupons(ctx context.Context, page int) ([]*http_response.CouponsPrefixResponse, int, error) {
 	var (
 		limit, _ = strconv.Atoi(os.Getenv("LIMIT"))
 		offset   = limit * (page - 1)
@@ -50,9 +51,10 @@ func (c *CouponsPrefixServiceImpl) GetCoupons(ctx context.Context, page int) ([]
 
 	data, err := c.repoCouponsPrefix.GetPrefixs(ctx, offset, limit)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return http_response.ListDomainToListCouponsPrefixResponse(data), nil
+	rows := helper.CountTotalRows(ctx, mysql_connection.InitMysqlDB(), "initial_coupons")
+	return http_response.ListDomainToListCouponsPrefixResponse(data), rows.TotalRows, nil
 }
 
 func (c *CouponsPrefixServiceImpl) UpdateCoupon(ctx context.Context, prefix *http_request.CouponsPrefixRequest, id int) (*http_response.CouponsPrefixResponse, error) {

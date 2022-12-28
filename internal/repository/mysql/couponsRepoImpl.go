@@ -138,7 +138,7 @@ func (c *CouponsRepoImpl) UpdateStatusCoupon(ctx context.Context, code, customer
 		affected, err := result.RowsAffected()
 		helper.PanicIfError(err)
 		if affected == 0 {
-			panic("Failed Update")
+			log.Println(affected)
 		} else {
 			log.Println("Success Update ", affected)
 		}

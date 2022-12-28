@@ -3,7 +3,6 @@ package handler
 import (
 	usecase "assigment-final-project/domain/usecase/products"
 	"assigment-final-project/helper"
-	mysql_connection "assigment-final-project/internal/config/database/mysql"
 	"assigment-final-project/internal/delivery"
 	"assigment-final-project/internal/delivery/http_request"
 	"assigment-final-project/internal/delivery/http_response"
@@ -51,13 +50,13 @@ func (p *ProductsHandlerImpl) GetsFindAndDeleteProduct(w http.ResponseWriter, r 
 	helper.PanicIfError(err)
 
 	if query == "" {
-		products, err := p.serviceProducts.GetProducts(r.Context(), pg)
+		products, rows, err := p.serviceProducts.GetProducts(r.Context(), pg)
 		if err != nil {
 			delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 			return
 		}
-		rows := helper.CountTotalRows(r.Context(), mysql_connection.InitMysqlDB(), "products")
-		delivery.ResponseDelivery(w, http.StatusOK, http_response.PaginationInfo(pg, limit, rows.TotalRows, products), nil)
+
+		delivery.ResponseDelivery(w, http.StatusOK, http_response.PaginationInfo(pg, limit, rows, products), nil)
 		return
 	}
 
@@ -106,11 +105,11 @@ func (p *ProductsHandlerImpl) GetProducts(w http.ResponseWriter, r *http.Request
 	pg, err := strconv.Atoi(page)
 	limit, _ := strconv.Atoi(os.Getenv("LIMIT"))
 	helper.PanicIfError(err)
-	result, err := p.serviceProducts.GetProducts(r.Context(), pg)
+	result, rows, err := p.serviceProducts.GetProducts(r.Context(), pg)
 	if err != nil {
 		delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 		return
 	}
-	rows := helper.CountTotalRows(r.Context(), mysql_connection.InitMysqlDB(), "products")
-	delivery.ResponseDelivery(w, http.StatusOK, http_response.PaginationInfo(pg, limit, rows.TotalRows, result), nil)
+
+	delivery.ResponseDelivery(w, http.StatusOK, http_response.PaginationInfo(pg, limit, rows, result), nil)
 }

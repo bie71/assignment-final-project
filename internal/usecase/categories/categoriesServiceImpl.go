@@ -5,6 +5,7 @@ import (
 	repository "assigment-final-project/domain/repository/categories"
 	"assigment-final-project/helper"
 	"assigment-final-project/helper/requestToEntity"
+	mysql_connection "assigment-final-project/internal/config/database/mysql"
 	"assigment-final-project/internal/delivery/http_request"
 	"assigment-final-project/internal/delivery/http_response"
 	"context"
@@ -46,16 +47,17 @@ func (c *CategoryServiceImpl) FindCategoryById(ctx context.Context, categoryId s
 	return http_response.DomainToCategoryResponse(category), nil
 }
 
-func (c *CategoryServiceImpl) GetCategories(ctx context.Context, page int) ([]*http_response.CategoryResponse, error) {
+func (c *CategoryServiceImpl) GetCategories(ctx context.Context, page int) ([]*http_response.CategoryResponse, int, error) {
 	var (
 		limit, _ = strconv.Atoi(os.Getenv("LIMIT"))
 		offset   = limit * (page - 1)
 	)
 	categories, err := c.repoCategory.GetCategories(ctx, offset, limit)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return http_response.ListDomainToListCategory(categories), nil
+	rows := helper.CountTotalRows(ctx, mysql_connection.InitMysqlDB(), "categories")
+	return http_response.ListDomainToListCategory(categories), rows.TotalRows, nil
 }
 
 func (c *CategoryServiceImpl) DeleteCategoryById(ctx context.Context, categoryId string) (string, error) {

@@ -5,6 +5,7 @@ import (
 	users_interface "assigment-final-project/domain/usecase/users"
 	"assigment-final-project/helper"
 	"assigment-final-project/helper/requestToEntity"
+	mysql_connection "assigment-final-project/internal/config/database/mysql"
 	"assigment-final-project/internal/delivery/http_request"
 	"assigment-final-project/internal/delivery/http_response"
 	"context"
@@ -58,7 +59,7 @@ func (s *ServiceUsersImplement) FindUser(ctx context.Context, UserLogin *http_re
 	return http_response.DomainUsersToResponseUsers(user), nil
 }
 
-func (s *ServiceUsersImplement) GetUsers(ctx context.Context, page int) ([]*http_response.UserResponse, error) {
+func (s *ServiceUsersImplement) GetUsers(ctx context.Context, page int) ([]*http_response.UserResponse, int, error) {
 	var (
 		limit, _ = strconv.Atoi(os.Getenv("LIMIT"))
 		offset   = limit * (page - 1)
@@ -66,7 +67,8 @@ func (s *ServiceUsersImplement) GetUsers(ctx context.Context, page int) ([]*http
 
 	users, err := s.UserRepo.GetUsers(ctx, offset, limit)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return http_response.ListDomainUserToListUserResponse(users), nil
+	rows := helper.CountTotalRows(ctx, mysql_connection.InitMysqlDB(), "users")
+	return http_response.ListDomainUserToListUserResponse(users), rows.TotalRows, nil
 }

@@ -5,6 +5,7 @@ import (
 	coupon "assigment-final-project/domain/repository/coupons"
 	transactionItems "assigment-final-project/domain/repository/transactions"
 	"assigment-final-project/helper"
+	mysql_connection "assigment-final-project/internal/config/database/mysql"
 	"assigment-final-project/internal/delivery/http_request"
 	"assigment-final-project/internal/delivery/http_response"
 	"context"
@@ -57,6 +58,7 @@ func (t *TransactionServiceImpl) AddTransaction(ctx context.Context, transaction
 			return nil, errors.New("product out of stock or product is empty")
 		}
 		totalPriceProduct += float64(result.Price * item.Quantity)
+		totalAfterDiscount = totalPriceProduct
 	}
 
 	if transactionRequest.CouponCode != "" {
@@ -81,14 +83,14 @@ func (t *TransactionServiceImpl) AddTransaction(ctx context.Context, transaction
 				prefix, err := t.repoInitialCoupon.FindCouponPrefix(ctx, prefixName, dataJoin.CategoryId.CategoryName())
 				helper.PrintIfError(err)
 				if prefix != nil {
-					discount = float32((dataJoin.Price*item.Quantity)/100) * float32(prefix.Discount())
-					totalAfterDiscount = totalPriceProduct - float64(discount)
-					if discount != 0 {
-						statusCoupon, err := t.repoCoupons.UpdateStatusCoupon(ctx, transactionRequest.CouponCode, transactionRequest.CustomerId)
-						helper.PrintIfError(err)
-						log.Println(statusCoupon)
-					}
+					discount += float32((dataJoin.Price*item.Quantity)/100) * float32(prefix.Discount())
 				}
+			}
+
+			totalAfterDiscount = totalPriceProduct - float64(discount)
+			if discount != 0 {
+				statusCoupon, _ := t.repoCoupons.UpdateStatusCoupon(ctx, transactionRequest.CouponCode, transactionRequest.CustomerId)
+				log.Println(statusCoupon)
 			}
 		}()
 		wg.Wait()
@@ -123,13 +125,11 @@ func (t *TransactionServiceImpl) AddTransaction(ctx context.Context, transaction
 		prefixs, err := t.repoInitialCoupon.GetPrefixMinimumPrice(ctx, totalPriceProduct)
 		helper.PrintIfError(err)
 		for _, prefix := range prefixs {
-			if totalPriceProduct >= float64(prefix.MinimumPrice()) {
-				couponCode := strings.ToUpper(prefix.PrefixName()) + "-" + helper.RandomString(16)
-				coupon := helper.CouponsRequestToEntity(couponCode, transactionRequest.CustomerId, prefix.ExpireDate())
-				err := t.repoCoupons.InsertCoupon(ctx, coupon)
-				helper.PanicIfError(err)
-				strList = append(strList, coupon.CouponCode())
-			}
+			couponCode := strings.ToUpper(prefix.PrefixName()) + "-" + helper.RandomString(16)
+			coupon := helper.CouponsRequestToEntity(couponCode, transactionRequest.CustomerId, prefix.ExpireDate())
+			err := t.repoCoupons.InsertCoupon(ctx, coupon)
+			helper.PanicIfError(err)
+			strList = append(strList, coupon.CouponCode())
 		}
 		codeChan <- strList
 	}()
@@ -142,7 +142,7 @@ func (t *TransactionServiceImpl) AddTransaction(ctx context.Context, transaction
 	}
 	return result, nil
 }
-func (t *TransactionServiceImpl) GetTransaction(ctx context.Context, page int) ([]*http_response.TransactionResponse, error) {
+func (t *TransactionServiceImpl) GetTransaction(ctx context.Context, page int) ([]*http_response.TransactionResponse, int, error) {
 	var (
 		limit, _            = strconv.Atoi(os.Getenv("LIMIT"))
 		offset              = limit * (page - 1)
@@ -152,7 +152,7 @@ func (t *TransactionServiceImpl) GetTransaction(ctx context.Context, page int) (
 
 	transactions, err := t.repoTransaction.GetTransactions(ctx, offset, limit)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	wg.Add(len(transactions))
 	defer close(chanListTransaction)
@@ -176,8 +176,8 @@ func (t *TransactionServiceImpl) GetTransaction(ctx context.Context, page int) (
 	}()
 	resultTransactions := <-chanListTransaction
 	wg.Wait()
-
-	return resultTransactions, nil
+	rows := helper.CountTotalRows(ctx, mysql_connection.InitMysqlDB(), "transaction")
+	return resultTransactions, rows.TotalRows, nil
 }
 
 func (t *TransactionServiceImpl) FindTransaction(ctx context.Context, transactionId string) (*http_response.TransactionResponse, error) {

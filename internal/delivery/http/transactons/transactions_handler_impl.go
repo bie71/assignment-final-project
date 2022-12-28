@@ -3,12 +3,10 @@ package handler
 import (
 	usecase "assigment-final-project/domain/usecase/transactions"
 	"assigment-final-project/helper"
-	mysql_connection "assigment-final-project/internal/config/database/mysql"
 	"assigment-final-project/internal/delivery"
 	"assigment-final-project/internal/delivery/http_request"
 	"assigment-final-project/internal/delivery/http_response"
 	"fmt"
-	"github.com/go-playground/validator/v10"
 	"net/http"
 	"os"
 	"strconv"
@@ -27,12 +25,7 @@ func (t *TransactionsHandlerImpl) AddTransaction(w http.ResponseWriter, r *http.
 	helper.ReadFromRequestBody(r, transactionRequest)
 	result, err := t.transactionService.AddTransaction(r.Context(), transactionRequest)
 	if err != nil {
-		errors, ok := err.(validator.ValidationErrors)
-		if !ok {
-			delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
-			return
-		}
-		delivery.ResponseDelivery(w, http.StatusBadRequest, nil, errors.Error())
+		delivery.ResponseDelivery(w, http.StatusBadRequest, nil, err.Error())
 		return
 	}
 
@@ -59,12 +52,12 @@ func (t *TransactionsHandlerImpl) GetTransactions(w http.ResponseWriter, r *http
 		return
 	}
 
-	result, err := t.transactionService.GetTransaction(r.Context(), p)
+	result, rows, err := t.transactionService.GetTransaction(r.Context(), p)
 	if err != nil {
 		fmt.Println(err)
 	}
-	rows := helper.CountTotalRows(r.Context(), mysql_connection.InitMysqlDB(), "transaction")
-	delivery.ResponseDelivery(w, http.StatusOK, http_response.PaginationInfo(p, limit, rows.TotalRows, result), nil)
+
+	delivery.ResponseDelivery(w, http.StatusOK, http_response.PaginationInfo(p, limit, rows, result), nil)
 }
 
 func (t *TransactionsHandlerImpl) DeleteTransaction(w http.ResponseWriter, r *http.Request) {

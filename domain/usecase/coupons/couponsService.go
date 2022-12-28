@@ -6,5 +6,5 @@ import (
 )
 
 type CouponsService interface {
-	GetCouponByCustomerId(ctx context.Context, customerId string, page int) (*http_response.CouponsCustomerResponse, error)
+	GetCouponByCustomerId(ctx context.Context, customerId string, page int) (*http_response.CouponsCustomerResponse, int, error)
 }

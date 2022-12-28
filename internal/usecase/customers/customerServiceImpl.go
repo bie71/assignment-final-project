@@ -4,6 +4,7 @@ import (
 	repository "assigment-final-project/domain/repository/customers"
 	"assigment-final-project/helper"
 	"assigment-final-project/helper/requestToEntity"
+	mysql_connection "assigment-final-project/internal/config/database/mysql"
 	"assigment-final-project/internal/delivery/http_request"
 	"assigment-final-project/internal/delivery/http_response"
 	"context"
@@ -51,16 +52,17 @@ func (c *CustomerServiceImpl) FindCustomer(ctx context.Context, customerId, phon
 
 }
 
-func (c *CustomerServiceImpl) GetCustomers(ctx context.Context, page int) ([]*http_response.CustomerResponse, error) {
+func (c *CustomerServiceImpl) GetCustomers(ctx context.Context, page int) ([]*http_response.CustomerResponse, int, error) {
 	var (
 		limit, _ = strconv.Atoi(os.Getenv("LIMIT"))
 		offset   = limit * (page - 1)
 	)
 	customers, err := c.customerRepo.GetCustomers(ctx, offset, limit)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return http_response.ListDomainToListCustomerResponse(customers), nil
+	rows := helper.CountTotalRows(ctx, mysql_connection.InitMysqlDB(), "customers")
+	return http_response.ListDomainToListCustomerResponse(customers), rows.TotalRows, nil
 }
 
 func (c *CustomerServiceImpl) DeleteCustomer(ctx context.Context, customerId, phone string) (string, error) {

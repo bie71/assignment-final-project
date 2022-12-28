@@ -3,7 +3,6 @@ package Handler_Users
 import (
 	user_service "assigment-final-project/domain/usecase/users"
 	"assigment-final-project/helper"
-	mysql_connection "assigment-final-project/internal/config/database/mysql"
 	"assigment-final-project/internal/delivery"
 	"assigment-final-project/internal/delivery/http_request"
 	"assigment-final-project/internal/delivery/http_response"
@@ -58,7 +57,8 @@ func (u *UserHandlerImpl) Login(w http.ResponseWriter, r *http.Request) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		token, _ := NewJwt.CreateToken(result, time.Until(expireTime))
+		token, err := NewJwt.CreateToken(result, time.Until(expireTime))
+		helper.PrintIfError(err)
 		http.SetCookie(w, &http.Cookie{
 			Name:    nameToken,
 			Value:   token,
@@ -86,11 +86,10 @@ func (u *UserHandlerImpl) GetUsers(w http.ResponseWriter, r *http.Request) {
 	p, err := strconv.Atoi(page)
 	limit, _ := strconv.Atoi(os.Getenv("LIMIT"))
 	helper.PanicIfError(err)
-	result, err := u.UsersService.GetUsers(r.Context(), p)
+	result, rows, err := u.UsersService.GetUsers(r.Context(), p)
 	if err != nil {
 		delivery.ResponseDelivery(w, http.StatusInternalServerError, nil, err.Error())
 		return
 	}
-	rows := helper.CountTotalRows(r.Context(), mysql_connection.InitMysqlDB(), "users")
-	delivery.ResponseDelivery(w, http.StatusOK, http_response.PaginationInfo(p, limit, rows.TotalRows, result), nil)
+	delivery.ResponseDelivery(w, http.StatusOK, http_response.PaginationInfo(p, limit, rows, result), nil)
 }

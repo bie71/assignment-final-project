@@ -4,6 +4,7 @@ import (
 	repository "assigment-final-project/domain/repository/products"
 	"assigment-final-project/helper"
 	"assigment-final-project/helper/requestToEntity"
+	mysql_connection "assigment-final-project/internal/config/database/mysql"
 	"assigment-final-project/internal/delivery/http_request"
 	"assigment-final-project/internal/delivery/http_response"
 	"context"
@@ -46,17 +47,17 @@ func (p *ProductsServiceImpl) FindProductById(ctx context.Context, productId str
 	return http_response.DomainProductsToProductsResponse(product), nil
 }
 
-func (p *ProductsServiceImpl) GetProducts(ctx context.Context, page int) ([]*http_response.ProductsResponse, error) {
+func (p *ProductsServiceImpl) GetProducts(ctx context.Context, page int) ([]*http_response.ProductsResponse, int, error) {
 	var (
 		limit, _ = strconv.Atoi(os.Getenv("LIMIT"))
 		offset   = limit * (page - 1)
 	)
 	products, err := p.repoProducts.GetProducts(ctx, offset, limit)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-
-	return http_response.ListDomainProductToResponseProducts(products), nil
+	rows := helper.CountTotalRows(ctx, mysql_connection.InitMysqlDB(), "products")
+	return http_response.ListDomainProductToResponseProducts(products), rows.TotalRows, nil
 }
 
 func (p *ProductsServiceImpl) UpdateProduct(ctx context.Context, productRequest *http_request.ProductsRequest, productId string) (*http_response.ProductsResponse, error) {
