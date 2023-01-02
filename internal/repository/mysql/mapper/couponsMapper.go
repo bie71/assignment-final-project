@@ -3,6 +3,7 @@ package mapper
 import (
 	entity "assigment-final-project/domain/entity/coupons"
 	"assigment-final-project/internal/repository/mysql/models"
+	"github.com/rocketlaunchr/dbq/v2"
 )
 
 func DomainCouponsToCouponsModel(domain *entity.Coupons) *models.CouponsModel {
@@ -32,4 +33,12 @@ func ListModelToListDomainCoupons(listModel []*models.CouponsModel) []*entity.Co
 		listEntity = append(listEntity, coupons)
 	}
 	return listEntity
+}
+
+func ListEntityCouponToListInterface(listEntity []*entity.Coupons) []interface{} {
+	list := make([]interface{}, 0)
+	for _, coupons := range listEntity {
+		list = append(list, dbq.Struct(DomainCouponsToCouponsModel(coupons)))
+	}
+	return list
 }

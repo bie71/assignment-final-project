@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	entity "assigment-final-project/domain/entity/coupons"
 	entity2 "assigment-final-project/domain/entity/transactions"
 	coupon "assigment-final-project/domain/repository/coupons"
 	transactionItems "assigment-final-project/domain/repository/transactions"
@@ -120,17 +121,20 @@ func (t *TransactionServiceImpl) AddTransaction(ctx context.Context, transaction
 	defer close(codeChan)
 	go func() {
 		defer wg.Done()
-		strList := make([]string, 0)
-
+		var (
+			strList       = make([]string, 0)
+			entityCoupons = make([]*entity.Coupons, 0)
+		)
 		prefixs, err := t.repoInitialCoupon.GetPrefixMinimumPrice(ctx, totalPriceProduct)
 		helper.PrintIfError(err)
 		for _, prefix := range prefixs {
 			couponCode := strings.ToUpper(prefix.PrefixName()) + "-" + helper.RandomString(16)
 			coupon := helper.CouponsRequestToEntity(couponCode, transactionRequest.CustomerId, prefix.ExpireDate())
-			err := t.repoCoupons.InsertCoupon(ctx, coupon)
-			helper.PanicIfError(err)
+			entityCoupons = append(entityCoupons, coupon)
 			strList = append(strList, coupon.CouponCode())
 		}
+		err = t.repoCoupons.InsertCoupons(ctx, entityCoupons)
+		helper.PanicIfError(err)
 		codeChan <- strList
 	}()
 	resultCode := <-codeChan

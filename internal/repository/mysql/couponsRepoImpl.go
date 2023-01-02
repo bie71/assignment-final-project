@@ -22,6 +22,25 @@ func NewCouponsRepoImpl(db *sql.DB) *CouponsRepoImpl {
 	return &CouponsRepoImpl{db: db}
 }
 
+func (c *CouponsRepoImpl) InsertCoupons(ctx context.Context, coupons []*entity.Coupons) error {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	errTx := dbq.Tx(ctx, c.db, func(tx interface{}, Q dbq.QFn, E dbq.EFn, txCommit dbq.TxCommit) {
+		listDbqStruct := mapper.ListEntityCouponToListInterface(coupons)
+		stmt := dbq.INSERTStmt(models.TableNameCoupons(), models.FieldNameCoupons(), len(listDbqStruct), dbq.MySQL)
+		result, errStore := E(ctx, stmt, nil, listDbqStruct)
+		if errStore != nil {
+			helper.PanicIfError(errStore)
+			return
+		}
+		errCommit := txCommit()
+		row, errCommit := result.RowsAffected()
+		helper.PanicIfError(errCommit)
+		log.Println("Succes Insert : ", row)
+	})
+	return errTx
+}
+
 func (c *CouponsRepoImpl) FindCouponByCustomerIdAndCode(ctx context.Context, code, customerId string) (*entity.Coupons, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()

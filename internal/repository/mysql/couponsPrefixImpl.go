@@ -151,7 +151,7 @@ func (c *CouponPrefixImpl) GetPrefixMinimumPrice(ctx context.Context, price floa
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	stmt := fmt.Sprintf("SELECT * FROM %s WHERE minimum_price <= ? GROUP BY id", models.TableNameCouponsPrefix())
+	stmt := fmt.Sprintf("SELECT DISTINCT  prefix_name , minimum_price , expire_date FROM %s WHERE minimum_price <= ? GROUP BY id", models.TableNameCouponsPrefix())
 	opts := &dbq.Options{
 		SingleResult:   false,
 		ConcreteStruct: models.CouponsPrefixModel{},

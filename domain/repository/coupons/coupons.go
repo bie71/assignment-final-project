@@ -7,6 +7,7 @@ import (
 
 type CouponsRepo interface {
 	InsertCoupon(ctx context.Context, coupons *entity.Coupons) error
+	InsertCoupons(ctx context.Context, coupons []*entity.Coupons) error
 	FindCoupon(ctx context.Context, code string) (*entity.Coupons, error)
 	FindCouponByCustomerIdAndCode(ctx context.Context, code, customerId string) (*entity.Coupons, error)
 	FindCouponByCustomerId(ctx context.Context, customerId string, offsetNum, limitNum int) ([]*entity.Coupons, error)
