@@ -133,8 +133,10 @@ func (t *TransactionServiceImpl) AddTransaction(ctx context.Context, transaction
 			entityCoupons = append(entityCoupons, coupon)
 			strList = append(strList, coupon.CouponCode())
 		}
-		err = t.repoCoupons.InsertCoupons(ctx, entityCoupons)
-		helper.PanicIfError(err)
+		if len(entityCoupons) != 0 {
+			err = t.repoCoupons.InsertCoupons(ctx, entityCoupons)
+			helper.PanicIfError(err)
+		}
 		codeChan <- strList
 	}()
 	resultCode := <-codeChan
